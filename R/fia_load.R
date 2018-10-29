@@ -21,7 +21,7 @@
 #' 
 #' A quick way to get this one information from a mzML file
 #' 
-#' @param xmlFile
+#' @param xmlFile  the mzML file to be read
 #' 
 #' @details
 #' Before loading an mzML file into xcms objects it can be beneficial
@@ -50,7 +50,7 @@ getStartTimeStamp <- function(xmlFile) {
 #' 
 #' @title Split a file name by '.' or '_' or '-'
 #' 
-#' @param oneName
+#' @param oneName the filename that needs to be parsed
 #' 
 #' @details 
 #' Takes a filename ad splits it by one of three characters ('.' or '_' or '-').
@@ -69,7 +69,9 @@ parseFilename <- function(oneName) {
 #' 
 #' @title parse out diplicates from a tibble
 #' 
-#' @param fileTibble
+#' @param fileTibble a tibble with columns of "barcode", 
+#' "well", "runNo", "extra1", "extra2", "sampleType", "sampleName"
+#' coming from the parseFile function
 #' 
 #' @details 
 #' parsing a number of filenames where sometimes the same 
@@ -100,7 +102,7 @@ parseDups <- function(fileTibble) {
 #' 
 #' @title Read a collection of fia files, and split them into pos and neg polarities
 #' 
-#' @param fiaFolderPath
+#' @param fiaFolderPath a path to a batch of mzML files to be read and process
 #' 
 #' @details 
 #' 
@@ -172,7 +174,7 @@ readFiadata <- function(fiaFolderPath) {
 #' The core function of this package is to calculate a single value for each FIA trace. 
 #' That core function is performed here.
 #' 
-#' @param fiaExp
+#' @param fiaExp  the xcmsExp object for one fia batch 
 #' 
 #' @return a tibble with three columns, fName, sName and fiaValue.
 #' fName is the feature (mrm) name, sName is the sample name and fiaValue
@@ -210,9 +212,11 @@ calculateMeanValues <- function(fiaExp) {
 #' 
 #' @title Read results from a folder containing data files from one experiment
 #' 
-#' @param onePath
-#' @param resultName
-#' @param forceRecalc
+#' @param onePath a path to a batch of SS files generated
+#' @param resultName the name of the file that is used to save the result
+#' @param forceRecalc boolean. If TRUE then all mzML files are reprocessed. 
+#' If FALSE then the already generated results are looked for first and returned
+#' if found.
 #' 
 #' @details 
 #' 
@@ -245,9 +249,12 @@ readOneFolder <- function(onePath, resultName = 'result.tsv', forceRecalc = FALS
 #' 
 #' @title Find wiff directories that may contain SS batches
 #' 
-#' @param parentPath
-#' @param doConvert
-#' @param forceRecalc
+#' @param parentPath a file path that contains wiff data
+#' @param doConvert boolean. If TRUE then msconvert will be called on 
+#' batches that are not present in the working directory.
+#' @param forceRecalc boolean. If TRUE then all batches will be 
+#' reconverted with msconvert. This means that any results are also
+#' lost.  
 #' 
 #' @details 
 #' 
@@ -308,7 +315,7 @@ findPotentialWiffDirs <- function(parentPath, doConvert = FALSE, forceRecalc = F
 #' 
 #' @title Call proteowizard msconvert to extract the data
 #' 
-#' @param myTibbleRow
+#' @param myTibbleRow a row from the findPotentialWiffDirs tibble that is returned
 #' 
 #' @details 
 #' Calling the msconvert will create a folder in the working directory named by the date
@@ -352,9 +359,15 @@ convertOneWiffFolder <- function(myTibbleRow) {
 #' 
 #' @title reload the fia results from the working directory
 #' 
-#' @param forceRecalc
+#' @param forceRecalc boolean. If TRUE then mzML files are read
+#' again and the results generated again.
 #' 
-#' @details saves two RData objects that are used overall in the package
+#' @details 
+#' Loads the results from each batch folder 
+#' and combine them into two tibbles which are then saved in two
+#' RData objects that are used overall in the package. forceRecalc = TRUE
+#' will result in loading the mzML files and re-assessing the FIA value
+#' for all transitions.
 #' 
 #' @return nothing
 reloadFiaResults <- function(forceRecalc = FALSE) {
@@ -426,6 +439,20 @@ reloadFiaResults <- function(forceRecalc = FALSE) {
   
 }
 
+
+#' @name loadFiaResults
+#' 
+#' @title Load the FIA results
+#' 
+#' @param forceRecalc boolean. Passed to \code{\link{reloadFiaResults}}.
+#' 
+#' @details 
+#' Load the FIA resutls, passes the forceRecalc variable to the underlying
+#' reloadFiaResults function that is called if the RData files are not found
+#' 
+#' @return no return value, assigns to global values globalResdata
+#' and globalResdataNice
+#' 
 loadFiaResults <- function(forceRecalc = FALSE) {
   loaded <- FALSE
   if(file.exists(file.path(MZML_PATH, 'resdata.RData'))) {

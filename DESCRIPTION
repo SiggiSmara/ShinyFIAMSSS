@@ -3,14 +3,15 @@ Title: Flow Injection Analysis Mass Spectrometry System Suitability
 Author: Sigurdur Smarason
 Maintainer: Sigurdur Smarason  <runningman69@gmail.com>
 License: BSD 3-Clause License
+version: 0.1.0
 Depends:
-    shiny
-    shinyDirectoryInput
-    DT
-    tidyverse
-    lubridate
-    XML
-    xcms
+    shiny,
+    shinyDirectoryInput,
+    DT,
+    tidyverse,
+    lubridate,
+    XML,
+    xcms,
     MALDIquant
 Description: A tool to assess system suitability of a FIA MS (MRM type) setup
-
+RoxygenNote: 6.1.0

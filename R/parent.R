@@ -27,6 +27,8 @@ globalUIdata <- list()
 #' 
 #' @title Run Main Program
 #' 
+#' @param WorkDirPath a path to the working directory
+#' 
 #' @export
 #' 
 runMainProgram <- function(WorkDirPath = '') {
