@@ -27,7 +27,8 @@ globalUIdata <- list()
 #' 
 #' @title Run Main Program
 #' 
-#' @param WorkDirPath a path to the working directory
+#' @param WorkDirPath he path of the working directory that contains 
+#' the mzML files, the FIA results and the settings for the data exploration.
 #' 
 #' @export
 #' 
@@ -39,22 +40,24 @@ runMainProgram <- function(WorkDirPath = '') {
   assign('MZML_PATH', normalizePath(WorkDirPath), inherits = TRUE)
   
   assign('FIAspikesClean' , c('C0','C2','C3','C4','C5','C6 (C4:1-DC)','C8','C10','C12','C14','C16','C18','lysoPC a C18:0',
-                      'PC aa C24:0','SM C18:0','H1','PC aa C36:0'), inherits = TRUE)
+                              'PC aa C24:0','SM C18:0','H1','PC aa C36:0'), inherits = TRUE)
   
-  assign('settings', list(fiaFile='FIA.csv', fiaIstdFile = 'FIA_ISTD.csv', fiaFeatures = FIAspikesClean), inherits=TRUE)
+  assign('settings', list(fiaFile='FIA.csv', 
+                          fiaIstdFile = 'FIA_ISTD.csv', 
+                          fiaFeatures = FIAspikesClean,
+                          mzmlPath = MZML_PATH,
+                          wiffPath = '/media/ssmarason/qtrap/Analyst Data/Projects/CHRIS_Biocrates',
+                          convertWiffs = TRUE), 
+         inherits=TRUE)
   
-  runApp(file.path(MZML_PATH,'/shiny/fia_settings'))
+  ##run the settings shiny app. The end result is that the settings
+  ##are saved into the globalSettings object
+  runApp('/home/ssmarason/ownCloud/metidq_data//shiny/fia_settings')
   
-  #biocrates features
-  myBiocFeatures <- NULL
+  source('/home/ssmarason/ownCloud/metidq_data/shiny/fia_shiny/fia_load.R')
   
-  #ISTDs with the cps limits (tested for in blank)
-  FIAistds <- NULL
-  
-  source(file.path(MZML_PATH,'shiny', 'fia_shiny', 'fia_load.R'))
-  
-  wiffPath <- '/media/ssmarason/qtrap/Analyst Data/Projects/CHRIS_Biocrates'
-  allWiffPaths <- findPotentialWiffDirs(wiffPath, doConvert=TRUE)
+  ##check for new datasets and convert them if they are found (based on a setting)
+  allWiffPaths <- findPotentialWiffDirs(globalSettings$wiffPath, doConvert=globalSettings$convertWiffs)
   if(length(allWiffPaths) == 0) {
     warning("Wiff directory is not reachable!")
     msg <- paste('The wiff directory is not reachable!\n',
@@ -63,8 +66,30 @@ runMainProgram <- function(WorkDirPath = '') {
     readline(msg)
   }
   
-  runApp(file.path(MZML_PATH,'/shiny/fia_shiny'))
+  ##TODO read the parent foldernames along with the other data
+  ##map the foldernames to dates, format; begins with (ymd or dmy)
+  ##if format does not fit make a mapping from name to date
+  ##that can be saved and reused. Interface via shiny app.
+  
+  ##global objects used to assign the transitions
+  #biocrates features
+  myBiocFeatures <- read_tsv(file.path(MZML_PATH,globalSettings$fiaFile))
+  #ISTDs with the cps limits (tested for in blank)
+  FIAistds <- read_tsv(file.path(MZML_PATH,globalSettings$fiaIstdFile))
+  loadFiaResults()
+  
+  ##Create the rest of the needed data objects to facilitate browsing
+  myUIdata <- get('globalUIdata')
+  myUIdata$allDates <- globalResdataNice %>% group_by(batchDate) %>% summarise()
+  myUIdata$allDates <-myUIdata$allDates$batchDate
+  myUIdata$allYears <- unique(year(myUIdata$allDates))
+  assign('globalUIdata', myUIdata, inherits=TRUE)
+  
+  ##run the data exploration shiny app
+  runApp('/home/ssmarason/ownCloud/metidq_data/shiny/fia_shiny')
 }
+
+#runMainProgram('/home/ssmarason/ownCloud/FIA_SS_data')
 
 
 

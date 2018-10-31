@@ -8,32 +8,6 @@
 #
 
 navbarPage("FIA SS Explorer",
-           tabPanel("Settings",
-                    sidebarLayout(
-                      sidebarPanel(
-                        #actionLink("recalcAll", "Recalc All"),
-                        directoryInput('mzmlDirectory', 
-                                        label = 'Results directory'
-                                     ),
-                        textInput('fiaFile', 'MRM transitions file name **'),
-                        textInput('fiaIstdFile', 'ISTD intensity cutoff file name **'),
-                        tags$div(class="h5", checked=NA,
-                                 tags$p("** Note: should be present in the Results directory")
-                        ),
-                        textAreaInput('fiaFeatures', 'Features for SS check'),
-                        actionButton("saveSettings",'Save'),
-                        
-                        width = 10
-                      ),
-                      
-                      # Empty but used to call the filter check
-                      # that also updates the inputs
-                      mainPanel(
-                        textOutput("filter2")
-                        )
-                    )
-                    
-            ),
            tabPanel("Time Trends",
                     # Sidebar for the time trend explorer
                     sidebarLayout(
@@ -63,7 +37,9 @@ navbarPage("FIA SS Explorer",
                                                                 brush = brushOpts(
                                                                   id = "timePlot_brush",
                                                                   resetOnNew = TRUE
-                                                                ))),
+                                                                )),
+                                              textOutput("filter2")
+                                             ),
                                     tabPanel("Table", DT::dataTableOutput("table"))
                         )
                       )

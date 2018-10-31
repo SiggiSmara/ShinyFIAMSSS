@@ -8,60 +8,12 @@
 #
 
 
-#biocrates features
-#biocFIAfeatures <- "FIA.csv"
-#myBiocFeatures <- read_tsv(file.path(MZML_PATH,biocFIAfeatures))
-
-#present in SS sample
-#FIAspikesClean <- c('C0','C2','C3','C4','C5','C6 (C4:1-DC)','C8','C10','C12','C14','C16','C18','lysoPC a C18:0',
-#                    'PC aa C24:0','SM C18:0','H1','PC aa C36:0')
-
-#ISTDs with the cps limits (tested for in blank) 
-#FIAistds <- read_tsv(file.path(MZML_PATH,biocFIAfeaturesISTDs))
-
-#add the ISTDs to the FIAspikes list so they are calculated for all
-#FIAspikes <- c(FIAspikesClean , FIAistds$SHORT_NAME)
-
-
-#source(file.path(MZML_PATH,'fia_shiny_1.R'))
-
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  output$note <- renderText({ "* Note: should be present in the Result directory" })
-  
   startupFilter <- reactive({
-    genText <- paste("This Shiny App is intended to be run",
-    "as a part of a larger workflow in which some objects would",
-    "already be defined in this environment prior to `runApp` being",
-    "executed. Try evaluating the code in `parent.R` which",
-    "wraps this Shiny app in a larger workflow.")
-    if (!exists("MZML_PATH")) {
-      stop(paste("'MZML_PATH' var doesn't exist.",genText))
-    }
-    
-    #populate the settings
-    if(file.exists(file.path(MZML_PATH,'settings.RData'))) {
-      load(file.path(MZML_PATH,'settings.RData'))
-    } else {
-      showNotification("No settings file detected. Using defaults.", type='warning')
-    }
-    updateTextInput(session, 'fiaFile', value = as.character(settings$fiaFile))
-    updateTextInput(session, 'fiaIstdFile', value = as.character(settings$fiaIstdFile))
-    updateTextAreaInput(session, 'fiaFeatures', value = as.character(settings$fiaFeatures))
-    assign('globalSettings', settings, inherits = TRUE)
-    
-    updateDirectoryInput(session, 'mzmlDirectory', value = MZML_PATH)
-  
-    loadFiaResults()
     updateSelectInput(session, 'metaboliteID', choices = myAnalytes())
-    myUIdata <- get('globalUIdata')
-    myUIdata$allDates <- globalResdataNice %>% group_by(batchDate) %>% summarise()
-    myUIdata$allDates <-myUIdata$allDates$batchDate
-    myUIdata$allYears <- unique(year(myUIdata$allDates))
-    assign('globalUIdata', myUIdata, inherits=TRUE)
-    
-    updateSelectInput(session, 'filterYear', choices = c('select a year',globalUIdata$allYears))
+    updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
     updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
     return('')
   })
@@ -121,6 +73,10 @@ shinyServer(function(input, output, session) {
     }
       
   }, ignoreNULL = FALSE)
+  
+  allYears <- reactive({
+    return(globalUIdata$allYears)
+  })
   
   myAnalytes <- reactive({
     analytes <- NULL
