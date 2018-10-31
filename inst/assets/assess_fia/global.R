@@ -12,7 +12,7 @@
 #                     'PC aa C24:0','SM C18:0','H1','PC aa C36:0')
 #
 # settings <- list(fiaFile='FIA.csv', fiaIstdFile = 'FIA_ISTD.csv', fiaFeatures = FIAspikesClean)
-# 
+#
 # # setting some global variables to NULL, will be assigned later to real objects / values
 # globalSettings <- NULL
 # globalResdata <- NULL
