@@ -13,7 +13,6 @@ library(shinyDirectoryInput)
 #register(DoparParam(), default = TRUE)
 #library(utils)
 
-
 # setting some global variables to NULL, will be assigned later to real objects / values
 MZML_PATH <- NULL
 FIAspikesClean <- NULL
@@ -33,6 +32,7 @@ globalUIdata <- list()
 #' @export
 #' 
 runMainProgram <- function(WorkDirPath = '') {
+  
   # make sure that a path is supplied
   if(length(WorkDirPath) == 0) 
     stop('No working directory path supplied, please try again.')
@@ -52,9 +52,10 @@ runMainProgram <- function(WorkDirPath = '') {
   
   ##run the settings shiny app. The end result is that the settings
   ##are saved into the globalSettings object
-  runApp('/home/ssmarason/ownCloud/metidq_data//shiny/fia_settings')
+  appDir <- system.file("assets", "set_settings", package = "ShinyFIAMSSS")
+  runApp(appDir)
   
-  source('/home/ssmarason/ownCloud/metidq_data/shiny/fia_shiny/fia_load.R')
+  #source('/home/ssmarason/ownCloud/metidq_data/shiny/fia_shiny/fia_load.R')
   
   ##check for new datasets and convert them if they are found (based on a setting)
   allWiffPaths <- findPotentialWiffDirs(globalSettings$wiffPath, doConvert=globalSettings$convertWiffs)
@@ -86,7 +87,8 @@ runMainProgram <- function(WorkDirPath = '') {
   assign('globalUIdata', myUIdata, inherits=TRUE)
   
   ##run the data exploration shiny app
-  runApp('/home/ssmarason/ownCloud/metidq_data/shiny/fia_shiny')
+  appDir <- system.file("assets", "assess_fia", package = "ShinyFIAMSSS")
+  runApp(appDir)
 }
 
 #runMainProgram('/home/ssmarason/ownCloud/FIA_SS_data')

@@ -3,7 +3,7 @@ Title: Flow Injection Analysis Mass Spectrometry System Suitability
 Author: Sigurdur Smarason
 Maintainer: Sigurdur Smarason  <runningman69@gmail.com>
 License: BSD 3-Clause License
-version: 0.1.0
+Version: 0.1.0
 Depends:
     shiny,
     shinyDirectoryInput,
