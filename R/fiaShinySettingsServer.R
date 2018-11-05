@@ -38,7 +38,7 @@ fiaShinySettingsServer <- function(self) {
       updateDirectoryInput(session, 'protwizDirectory', value = as.character(self$settings$protwizPath))
       updateCheckboxInput(session,'convertNewWiffs', value =as.logical(self$settings$convertWiffs))
       updateTextInput(session, 'fiaFile', value = as.character(self$settings$fiaFile))
-      updateTextInput(session, 'fiaIstdFile', value = as.character(self$settings$fiaIstdFile))
+      #updateTextInput(session, 'fiaIstdFile', value = as.character(self$settings$fiaIstdFile))
       updateTextAreaInput(session, 'fiaFeatures', value = as.character(self$settings$fiaFeatures))
       
       
@@ -62,7 +62,7 @@ fiaShinySettingsServer <- function(self) {
     observe({
       if (input$Continue > 0) {
         self$settings$fiaFile <- input$fiaFile
-        self$settings$fiaIstdFile <- input$fiaIstdFile
+        #self$settings$fiaIstdFile <- input$fiaIstdFile
         self$settings$fiaFeatures <- unlist(str_split(input$fiaFeatures,','))
         self$settings$workdirPath <- readDirectoryInput(session, 'mzmlDirectory')
         self$settings$wiffPath <- readDirectoryInput(session, 'wiffDirectory')
@@ -135,15 +135,15 @@ fiaShinySettingsServer <- function(self) {
       }
       })
     
-    observeEvent(input$fiaIstdFile, {
-      if(!file.exists(file.path(self$settings$workdirPath,input$fiaIstdFile))) {
-        shinyjs::runjs(paste0("document.getElementById('fiaIstdFile').style.border =
-                     'solid red'"))
-      } else {
-        shinyjs::runjs(paste0("document.getElementById('fiaIstdFile').style.border =
-                     ''"))
-      }
-      })
+    # observeEvent(input$fiaIstdFile, {
+    #   if(!file.exists(file.path(self$settings$workdirPath,input$fiaIstdFile))) {
+    #     shinyjs::runjs(paste0("document.getElementById('fiaIstdFile').style.border =
+    #                  'solid red'"))
+    #   } else {
+    #     shinyjs::runjs(paste0("document.getElementById('fiaIstdFile').style.border =
+    #                  ''"))
+    #   }
+    #   })
     
     
     
@@ -157,7 +157,7 @@ fiaShinySettingsServer <- function(self) {
       settings <- self$settings
       settingsFilePath <- file.path(settings$workdirPath,'settings.RData')
       settings$fiaFile <- input$fiaFile
-      settings$fiaIstdFile <- input$fiaIstdFile
+      #settings$fiaIstdFile <- input$fiaIstdFile
       settings$fiaFeatures <- unlist(str_split(input$fiaFeatures,','))
       settings$wiffPath <- input$wiffDirectory
       save(settings, file=settingsFilePath)

@@ -9,9 +9,9 @@ library(shinyDirectoryInput)
 library(R6)
 #library(RColorBrewer)
 #library(pander)
-#library(doParallel)
-#registerDoParallel(3)
-#register(DoparParam(), default = TRUE)
+library(doParallel)
+registerDoParallel(2)
+register(DoparParam(), default = TRUE)
 #library(utils)
 
 
@@ -27,6 +27,8 @@ fiaR6 <- R6Class("fiaR6",
     myBiocFeatures = NULL, 
     FIAistds = NULL,
     myUIdata = NULL,
+    resdata = NULL,
+    resdataNice = NULL,
     debug = list(),
     initialize = function(workdirPath, wiffPath){
       initFiaR6(self, workdirPath, wiffPath)
@@ -36,6 +38,9 @@ fiaR6 <- R6Class("fiaR6",
       },
     prepareForFIA = function(forceRecalc = FALSE) {
       prepForFIA(self, forceRecalc = forceRecalc)
+    },
+    runShinyFIA = function(){ 
+      runApp(getFIAApp(self))
     }
   )
 )
@@ -56,8 +61,7 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
   wiffPath <- normalizePath(wiffPath)
   FIAspikesClean <- c('C0','C2','C3','C4','C5','C6 (C4:1-DC)','C8','C10','C12','C14','C16','C18','lysoPC a C18:0',
                      'PC aa C24:0','SM C18:0','H1','PC aa C36:0')
-  self$settings <- list(fiaFile='FIA.csv', 
-                          fiaIstdFile = 'FIA_ISTD.csv', 
+  self$settings <- list(fiaFile='features.csv', 
                           fiaFeatures = FIAspikesClean,
                           convertWiffs = TRUE,
                           wiffPath = wiffPath,
@@ -108,7 +112,7 @@ getFIAApp <- function(self) {
 prepForFIA <- function(self, forceRecalc = FALSE) {
   ##check for new datasets and convert them if they are found (based on a setting)
   allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath, 
-                                        resPath = self$settings$workdirRDataPath, 
+                                        resPath = self$settings$workdirMZMLPath, 
                                         protwizPath = self$settings$protwizPath,  
                                         doConvert=self$settings$convertWiffs)
   if(length(allWiffPaths) == 0) {
@@ -125,18 +129,18 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
   ##that can be saved and reused. Interface via shiny app.
   
   ##global objects used to assign the transitions
-  #biocrates features
-  self$myBiocFeatures <- read_tsv(file.path(self$settings$workdirPath,self$settings$fiaFile))
-  #ISTDs with the cps limits (tested for in blank)
-  self$FIAistds <- read_tsv(file.path(self$settings$workdirPath, self$settings$fiaIstdFile))
-  
+  self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
+  self$myBiocFeatures <- self$myBiocFeatures %>% rename( fName = name) %>% 
+                          mutate(fName = as.factor(fName))
   loadFiaResults(self, forceRecalc=forceRecalc)
   
   ##Create the rest of the needed data objects to facilitate browsing
   self$myUIdata <- list()
   self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()
-  self$myUIdata$allDates <-myUIdata$allDates$batchDate
-  self$myUIdata$allYears <- unique(year(myUIdata$allDates))
+  self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
+  self$myUIdata$allYears <- unique(year(self$myUIdata$allDates))
+  self$myUIdata$allBatchNames <- unique(self$resdataNice$batchName)
+  self$myUIdata$ISTDs <- unlist(unique(self$resdataNice %>% filter(is_IS == 1) %>% select(fName)), use.names = FALSE)
   return(invisible(self))
 }
 

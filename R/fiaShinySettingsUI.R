@@ -32,7 +32,6 @@ fiaShinySettingsUI <-function(self) {
         ),
         checkboxInput('convertNewWiffs', 'Look for and convert new raw data files', value = TRUE),
         textInput('fiaFile', 'MRM transitions file name **'),
-        textInput('fiaIstdFile', 'ISTD intensity cutoff file name **'),
         tags$div(class="h5", checked=NA,
                  tags$p("** Note: should be present in the Results directory")
         ),
