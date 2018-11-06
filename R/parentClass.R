@@ -10,8 +10,6 @@ library(R6)
 #library(RColorBrewer)
 #library(pander)
 library(doParallel)
-registerDoParallel(2)
-register(DoparParam(), default = TRUE)
 #library(utils)
 
 
@@ -115,6 +113,11 @@ getFIAApp <- function(self) {
 #' that can be used for data exploration
 #' @return invisible(self)
 prepForFIA <- function(self, forceRecalc = FALSE) {
+  #set the parallell parameters
+  if(self$settings$)
+  registerDoParallel(2)
+  register(DoparParam(), default = TRUE)
+  register(SerialParam())
   ##check for new datasets and convert them if they are found (based on a setting)
   if(self$settings$convertWiffs) {
     allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,

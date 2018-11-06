@@ -354,7 +354,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   if(!dir.exists(self$settings$workdirRDataPath)) {
     dir.create(self$settings$workdirRDataPath, recursive = TRUE)
   }
-  if(file.exist(file.path(self$settings$workdirRDataPath, 'resdata.RData'))) {
+  if(file.exists(file.path(self$settings$workdirRDataPath, 'resdata.RData'))) {
     unlink(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
   }
   if(file.exists(file.path(self$settings$workdirRDataPath, 'tst.RData'))) {
