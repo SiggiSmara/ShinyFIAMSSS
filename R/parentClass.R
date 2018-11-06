@@ -57,11 +57,11 @@ fiaR6 <- R6Class("fiaR6",
 #'
 #' @return invisible(self)
 initFiaR6 <- function(self, workdirPath, wiffPath) {
-  convertWiffsetting <- TRUE
+  convertWiffsetting <- FALSE
   workdirPath <- normalizePath(workdirPath)
   if(nchar(wiffPath)>0) {
     wiffPath <- normalizePath(wiffPath)
-    convertWiffsetting <- FALSE
+    convertWiffsetting <- TRUE
   }
 
   FIAspikesClean <- c('C0','C2','C3','C4','C5','C6 (C4:1-DC)','C8','C10','C12','C14','C16','C18','lysoPC a C18:0',

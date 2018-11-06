@@ -173,82 +173,6 @@ processOneFolder <- function(folderPath, resultName) {
   }
 }
 
-
-#' @name assignFeatureNames
-#'
-#' @title Assign feature names
-#'
-#' @details
-#' Given a list of 'Q1_Q3_polarity' names and a corresponding data frame that also
-#' contains a name for each combination match them up
-#'
-#' @param transitions a list of strings containing  transition
-#' information on the form 'Q1_Q3_polarity'
-#' @param transNames a tibble with qolumns 'Q1', 'Q3', 'polarity', and 'feature'
-#'
-#' @return a tibble with the
-#'
-readFiadata <- function(self, fiaFolderPath, resultName) {
-  fls <- list.files(fiaFolderPath,'*.mzML', recursive=TRUE)
-  retcols <- c("barcode"=4,"well"=5,"runNo"=6 ,"extra1"=7, "extra2"=8, "sampleType"=9, "sampleName"=15)
-  parsedFls <- as_tibble(t(apply(matrix(fls), MARGIN=1, FUN = parseFilename, retcols = retcols)))
-  parsedFls$batchName <- basename(dirname(fiaFolderPath))
-  parsedFls <- parsedFls %>% mutate(tStamp = unlist(lapply(file.path(fiaFolderPath,fls),getStartTimeStamp)))
-  testCols <- c("batchName", "barcode", "well", "runNo", "extra1", "extra2", "sampleType", "sampleName")
-  parsedFls <- parsedFls %>% select(testCols, everything())
-  parsedFls <- parseDups(parsedFls, testCols=testCols)
-  if(length(unique(parsedFls$runNo)) == 1) {
-    parsedFls <- parsedFls %>% mutate(runNo = 1)
-  }
-  parsedFls <- parsedFls %>% rename(polarity = runNo)
-  self$debug$parsedFls <- parsedFls
-  posneg <- c(0,1)
-
-  bothdata <- vector("list", length(posneg))
-  names(bothdata) <- c('neg', 'pos')
-  for(onePol in posneg) {
-    polFls <- fls[parsedFls$polarity == onePol]
-    if(length(polFls) > 0) {
-      dataFile <- paste0(str_sub())
-      bothdata[[onePol+1]] <- read_tsv(resFilePath <- file.path(folderPath, resultName))
-      #bothdata[[onePol+1]] <- readSRMData(
-      #  file.path(fiaFolderPath, polFls))
-
-      #assign sample names
-      # sampleNames(bothdata[[(onePol+1)]]) <- unlist(unite(parsedFls %>% filter(polarity == onePol), sep ="_"))
-      #
-      # #assign mzML features
-      # mzRfeatures <- as.tibble(as(featureData(bothdata[[(onePol+1)]]), "data.frame"))
-      # mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
-      #                                       Q3 = productIsolationWindowTargetMZ)
-      # biocrIdx <- rep(0, length(mzRfeatures$Q1))
-      # fnames <- rep("feature", length(mzRfeatures$Q1))
-      # for(h in 1:length(mzRfeatures$Q1) ) {
-      #   mzRQ1 <- mzRfeatures$Q1[h]
-      #   diffs <- abs(self$myBiocFeatures$Q1-mzRQ1)
-      #   myfound <- which(diffs == min(diffs) & diffs < 0.25)
-      #   foundOne <- FALSE
-      #   for(j in myfound) {
-      #     if(mzRfeatures$polarity[h] == self$myBiocFeatures$polarity[j] &
-      #        abs(mzRfeatures$Q3[h] - self$myBiocFeatures$Q3[j]) < 0.25) {
-      #       biocrIdx[h] <- j
-      #       foundOne <- TRUE
-      #       fnames[h] <- self$myBiocFeatures$name[j]
-      #     }
-      #   }
-      #   if(!foundOne) {
-      #     fnames[h] <- paste0("unknown_", mzRfeatures$Q1[h], "_", mzRfeatures$Q3[h])
-      #     print(c("unknown transition:", mzRfeatures$Q1[h],mzRfeatures$Q3[h]))
-      #   }
-      # }
-      # #then finally asign the feature names
-      # featureNames(bothdata[[(onePol+1)]]) <- fnames
-    }
-  }
-
-  return(bothdata)
-}
-
 #' @name calculateMeanValues
 #'
 #' @title Calculate the mean intensity for each trace and return it in a matrix format
@@ -326,123 +250,6 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
   return(oneResdata)
 }
 
-#' @name findPotentialWiffDirs
-#'
-#' @title Find wiff directories that may contain SS batches
-#'
-#' @param parentPath a file path that contains wiff data
-#' @param resPath a file path that contains the resulting mzML files
-#' @param protwizPath a file path to the proteowizard installation
-#' @param doConvert boolean. If TRUE then msconvert will be called on
-#' batches that are not present in the working directory.
-#' @param forceRecalc boolean. If TRUE then all batches will be
-#' reconverted with msconvert. This means that any results are also
-#' lost.
-#'
-#' @details
-#'
-#' DONE: find all folders that have at least the spiked sample in them
-#' DONE: find all wiff folders that have equal numbers of spikes and blanks
-#' DONE: check if a barcode folder is present in resPath corresponding to a wiff folder
-#'
-#' @return a tibble that contains all folders that potentially have full sets of SS
-#' batches along with the information if that folder is found in the working directory
-findPotentialWiffDirs <- function(parentPath, resPath, protwizPath, doConvert = FALSE, forceRecalc = FALSE) {
-  if(!dir.exists(parentPath)) return()
-  ss_spike_name <- "20000004\\.wiff"
-  blank_name <-  "10000001\\.wiff"
-
-  ss_namelen <- nchar(ss_spike_name)
-  blank_nameLen <- nchar(blank_name)
-  prec_len <- nchar(parentPath)+1
-
-  foundFiles = list.files(parentPath, pattern = ss_spike_name, recursive = TRUE)
-  for(i in 1:length(foundFiles)) {
-    foundFiles[i] <- dirname(foundFiles[i])
-  }
-  foundFiles <- unique(foundFiles)
-  goodFolders <- rep('',length(foundFiles))
-
-  res <- tibble(folder = character(), barcode = character(), converted = logical(), fullPath=character())
-  for(i in 1:length(goodFolders)) {
-    spikeFounds <- list.files(file.path(parentPath,foundFiles[i]), pattern = ss_spike_name)
-    blankFounds <- list.files(file.path(parentPath,foundFiles[i]), pattern = blank_name)
-    if(length(spikeFounds) == length(blankFounds)) {
-      folder = basename(foundFiles[i])
-      if(str_detect(folder,'FIA')) {
-        #print(folder)
-        folder <- basename(dirname(file.path(parentPath,foundFiles[i])))
-        #print(folder)
-      }
-      barcodeVector <- unique(unlist(lapply(str_split(spikeFounds,'_'), FUN = function(x) {x[2]})))
-      for(barcode in barcodeVector) {
-        converted <- dir.exists(file.path(resPath, folder, barcode))
-        res <- bind_rows(res, tibble( folder = folder,
-                                      barcode = barcode,
-                                      converted = converted,
-                                      fullPath = file.path(parentPath,foundFiles[i])
-        )
-        )
-      }
-    }
-  }
-  if(doConvert) {
-    unconverts <- res %>% filter(converted == FALSE)
-    if(forceRecalc) {
-      unconverts <- res
-    }
-    if(dim(unconverts)[1]>0){
-      apply(unconverts, MARGIN=1, FUN=convertOneWiffFolder, resPath = resPath, protwizPath = protwizPath)
-    }
-  }
-  return(res)
-}
-
-
-
-#' @name convertOneWiffFolder
-#'
-#' @title Call proteowizard msconvert to extract the data
-#'
-#' @param myTibbleRow a row from the findPotentialWiffDirs tibble that is returned
-#'
-#' @details
-#' Calling the msconvert will create a folder in the working directory named by the date
-#' and the barcode of the batch.
-#'
-#' @return Nothing is returned
-#parPath <- '/media/ssmarason/qtrap/Analyst Data/Projects/CHRIS_Biocrates'
-#allWiffPaths <- findPotentialWiffDirs(parPath, doConvert=TRUE)
-#allWiffPaths %>% filter(converted == FALSE)
-# DONE: call the proteowizard msconvert to convert wiff files to mzML files and put them in the right barcode folder
-convertOneWiffFolder <- function(myTibbleRow, resPath, protwizPath) {
-
-  wiffPath <- myTibbleRow['fullPath']
-  destPath <- file.path(resPath, myTibbleRow['folder'], myTibbleRow['barcode'])
-  unlink(destPath, recursive = TRUE)
-  dir.create(destPath, recursive = TRUE)
-  if(.Platform$OS.type == 'windows'){
-    command <- sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert")))
-    args <- paste(sprintf('"%s"',file.path(wiffPath,paste0('KIT*_',myTibbleRow['barcode'],'*.wiff'))),
-                  '-z',
-                  '-o',
-                  sprintf('"%s"',destPath)
-    )
-  } else {
-    command <- 'wine'
-    args <- paste(sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert"))),
-                  sprintf('"%s"',file.path(wiffPath,paste0('KIT*_',myTibbleRow['barcode'],'*.wiff'))),
-                  '-z',
-                  '-o',
-                  sprintf('"%s"',destPath)
-    )
-  }
-  suppressWarnings({
-    system2(command, args)
-  })
-}
-
-
 #' @name reloadFiaResults
 #'
 #' @title reload the fia results from the working directory
@@ -494,19 +301,23 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   fileNames <- parseFilenames(fileNames, retcols, sortcols)
 
   fileNames <- fileNames %>% mutate(
-    batchName = basename(dirname(dirname(sName)))
+    batchName = as.factor(basename(dirname(dirname(sName)))),
+    well = as.factor(well),
+    runNo = as.factor(runNo),
+    sampleType = as.factor(sampleType),
+    sampleName = as.factor(sampleName)
   )
   resdata <- resdata %>% inner_join(fileNames)
 
   #add more columns
   resdata <- mutate(resdata, included = 1,
                      tStamp = ymd_hms(tStamp),
-                     sampleTypeName = ifelse(sampleType =='01','Blank','SS')
+                     sampleTypeName = as.factor(ifelse(sampleType =='01','Blank','SS'))
    )
 
   #exclude some known suspects... TODO: move this to a separate
   #RData object to be saved in the workdir
-  resdata$included[resdata$batchNo>1] = 0
+  #resdata$included[resdata$batchNo>1] = 0
   resdata$included[is.na(resdata$fiaValue)] = 0
   resdata$included[resdata$barcode =='1015693595'] = 0
   resdata$included[resdata$barcode =='1026741254'] = 0
@@ -530,9 +341,9 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   tst <- tst %>%
     group_by(fName, barcode, batchNo) %>%
     mutate(batchDate = min(tStamp),
-           barc_batch_bname = paste(barcode,
+           barc_batch_bname = paste(batchName,
                                    batchNo,
-                                   batchName,
+                                    barcode,
                                    sep='_')) %>%
     ungroup()
 
@@ -570,8 +381,8 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' Load the FIA resutls, passes the forceRecalc variable to the underlying
 #' reloadFiaResults function that is called if the RData files are not found
 #'
-#' @return no return value, assigns to global values globalResdata
-#' and globalResdataNice
+#' @return no return value, assigns to self$resdata
+#' and self$resdataNice the loaded values
 #'
 loadFiaResults <- function(self, reload = FALSE, forceRecalc = FALSE) {
   if(reload || forceRecalc) {
@@ -598,9 +409,124 @@ loadFiaResults <- function(self, reload = FALSE, forceRecalc = FALSE) {
 
   self$resdata <- resdata
   self$resdataNice <- tst
-  #assign('globalResdata', resdata, inherits = TRUE)
-  #assign('globalResdataNice', tst, inherits = TRUE)
 }
+
+
+#' #' @name findPotentialWiffDirs
+#' #'
+#' #' @title Find wiff directories that may contain SS batches
+#' #'
+#' #' @param parentPath a file path that contains wiff data
+#' #' @param resPath a file path that contains the resulting mzML files
+#' #' @param protwizPath a file path to the proteowizard installation
+#' #' @param doConvert boolean. If TRUE then msconvert will be called on
+#' #' batches that are not present in the working directory.
+#' #' @param forceRecalc boolean. If TRUE then all batches will be
+#' #' reconverted with msconvert. This means that any results are also
+#' #' lost.
+#' #'
+#' #' @details
+#' #'
+#' #' DONE: find all folders that have at least the spiked sample in them
+#' #' DONE: find all wiff folders that have equal numbers of spikes and blanks
+#' #' DONE: check if a barcode folder is present in resPath corresponding to a wiff folder
+#' #'
+#' #' @return a tibble that contains all folders that potentially have full sets of SS
+#' #' batches along with the information if that folder is found in the working directory
+#' findPotentialWiffDirs <- function(parentPath, resPath, protwizPath, doConvert = FALSE, forceRecalc = FALSE) {
+#'   if(!dir.exists(parentPath)) return()
+#'   ss_spike_name <- "20000004\\.wiff"
+#'   blank_name <-  "10000001\\.wiff"
+#'
+#'   ss_namelen <- nchar(ss_spike_name)
+#'   blank_nameLen <- nchar(blank_name)
+#'   prec_len <- nchar(parentPath)+1
+#'
+#'   foundFiles = list.files(parentPath, pattern = ss_spike_name, recursive = TRUE)
+#'   for(i in 1:length(foundFiles)) {
+#'     foundFiles[i] <- dirname(foundFiles[i])
+#'   }
+#'   foundFiles <- unique(foundFiles)
+#'   goodFolders <- rep('',length(foundFiles))
+#'
+#'   res <- tibble(folder = character(), barcode = character(), converted = logical(), fullPath=character())
+#'   for(i in 1:length(goodFolders)) {
+#'     spikeFounds <- list.files(file.path(parentPath,foundFiles[i]), pattern = ss_spike_name)
+#'     blankFounds <- list.files(file.path(parentPath,foundFiles[i]), pattern = blank_name)
+#'     if(length(spikeFounds) == length(blankFounds)) {
+#'       folder = basename(foundFiles[i])
+#'       if(str_detect(folder,'FIA')) {
+#'         #print(folder)
+#'         folder <- basename(dirname(file.path(parentPath,foundFiles[i])))
+#'         #print(folder)
+#'       }
+#'       barcodeVector <- unique(unlist(lapply(str_split(spikeFounds,'_'), FUN = function(x) {x[2]})))
+#'       for(barcode in barcodeVector) {
+#'         converted <- dir.exists(file.path(resPath, folder, barcode))
+#'         res <- bind_rows(res, tibble( folder = folder,
+#'                                       barcode = barcode,
+#'                                       converted = converted,
+#'                                       fullPath = file.path(parentPath,foundFiles[i])
+#'         )
+#'         )
+#'       }
+#'     }
+#'   }
+#'   if(doConvert) {
+#'     unconverts <- res %>% filter(converted == FALSE)
+#'     if(forceRecalc) {
+#'       unconverts <- res
+#'     }
+#'     if(dim(unconverts)[1]>0){
+#'       apply(unconverts, MARGIN=1, FUN=convertOneWiffFolder, resPath = resPath, protwizPath = protwizPath)
+#'     }
+#'   }
+#'   return(res)
+#' }
+#'
+#'
+#'
+#' #' @name convertOneWiffFolder
+#' #'
+#' #' @title Call proteowizard msconvert to extract the data
+#' #'
+#' #' @param myTibbleRow a row from the findPotentialWiffDirs tibble that is returned
+#' #'
+#' #' @details
+#' #' Calling the msconvert will create a folder in the working directory named by the date
+#' #' and the barcode of the batch.
+#' #'
+#' #' @return Nothing is returned
+#' #parPath <- '/media/ssmarason/qtrap/Analyst Data/Projects/CHRIS_Biocrates'
+#' #allWiffPaths <- findPotentialWiffDirs(parPath, doConvert=TRUE)
+#' #allWiffPaths %>% filter(converted == FALSE)
+#' # DONE: call the proteowizard msconvert to convert wiff files to mzML files and put them in the right barcode folder
+#' convertOneWiffFolder <- function(myTibbleRow, resPath, protwizPath) {
+#'
+#'   wiffPath <- myTibbleRow['fullPath']
+#'   destPath <- file.path(resPath, myTibbleRow['folder'], myTibbleRow['barcode'])
+#'   unlink(destPath, recursive = TRUE)
+#'   dir.create(destPath, recursive = TRUE)
+#'   if(.Platform$OS.type == 'windows'){
+#'     command <- sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert")))
+#'     args <- paste(sprintf('"%s"',file.path(wiffPath,paste0('KIT*_',myTibbleRow['barcode'],'*.wiff'))),
+#'                   '-z',
+#'                   '-o',
+#'                   sprintf('"%s"',destPath)
+#'     )
+#'   } else {
+#'     command <- 'wine'
+#'     args <- paste(sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert"))),
+#'                   sprintf('"%s"',file.path(wiffPath,paste0('KIT*_',myTibbleRow['barcode'],'*.wiff'))),
+#'                   '-z',
+#'                   '-o',
+#'                   sprintf('"%s"',destPath)
+#'     )
+#'   }
+#'   suppressWarnings({
+#'     system2(command, args)
+#'   })
+#' }
 
 # datafolders <- paste0(MZML_PATH, c('/1023162039','/1023161974'))
 # resdata <- NULL

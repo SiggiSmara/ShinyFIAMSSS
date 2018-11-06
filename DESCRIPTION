@@ -6,6 +6,7 @@ License: BSD 3-Clause License
 Version: 0.1.0
 Depends:
     shiny,
+    shinyjs,
     shinyDirectoryInput,
     DT,
     tidyverse,
