@@ -137,9 +137,7 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
 
   ##global objects used to assign the transitions
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
-  print(self$myBiocFeatures)
-  self$myBiocFeatures <- self$myBiocFeatures %>% rename( fName = name) %>%
-                          mutate(fName = as.factor(fName))
+  self$myBiocFeatures <- mutate(self$myBiocFeatures, fName = as.factor(fName))
   loadFiaResults(self, forceRecalc=forceRecalc)
 
   ##Create the rest of the needed data objects to facilitate browsing
