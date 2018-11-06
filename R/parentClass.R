@@ -116,16 +116,18 @@ getFIAApp <- function(self) {
 #' @return invisible(self)
 prepForFIA <- function(self, forceRecalc = FALSE) {
   ##check for new datasets and convert them if they are found (based on a setting)
-  allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,
-                                        resPath = self$settings$workdirMZMLPath,
-                                        protwizPath = self$settings$protwizPath,
-                                        doConvert=self$settings$convertWiffs)
-  if(length(allWiffPaths) == 0) {
-    warning("Wiff directory is not reachable!")
-    msg <- paste('The wiff directory is not reachable!\n',
-                 'Press any key to continue at your own risk\n',
-                 'or else stop the script.')
-    readline(msg)
+  if(self$settings$convertWiffs) {
+    allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,
+                                          resPath = self$settings$workdirMZMLPath,
+                                          protwizPath = self$settings$protwizPath,
+                                          doConvert=self$settings$convertWiffs)
+    if(length(allWiffPaths) == 0) {
+      warning("Wiff directory is not reachable!")
+      msg <- paste('The wiff directory is not reachable!\n',
+                   'Press any key to continue at your own risk\n',
+                   'or else stop the script.')
+      readline(msg)
+    }
   }
 
   ##TODO read the parent foldernames along with the other data
