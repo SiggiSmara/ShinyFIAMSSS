@@ -135,14 +135,14 @@ processOneMZML <- function(filePath) {
   mzRfeatures <- as.tibble(as(featureData(myOrigData), "data.frame"))
   mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
                                         Q3 = productIsolationWindowTargetMZ)
-  mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
-  featureNames(myOrigData) <- mzRfeatures$fName
-  myData <- calculateMeanValues(myOrigData)
-  myResultFile <- paste0(str_sub(filePath, 1, nchar(filePath)-4),'tsv')
-  if(file.exists(myResultFile)) {
-    unlink(myResultFile)
-  }
-  write_tsv(myData, myResultFile)
+  # mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
+  # featureNames(myOrigData) <- mzRfeatures$fName
+  # myData <- calculateMeanValues(myOrigData)
+  # myResultFile <- paste0(str_sub(filePath, 1, nchar(filePath)-4),'tsv')
+  # if(file.exists(myResultFile)) {
+  #   unlink(myResultFile)
+  # }
+  # write_tsv(myData, myResultFile)
 }
 
 #' @name  processOneFolder
