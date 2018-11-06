@@ -131,10 +131,10 @@ parseDups <- function(fileTibble, testCols) {
 #' @return Nothing
 processOneMZML <- function(filePath) {
   myOrigData <- readSRMData(filePath)
-  sampleNames(myOrigData) <- c(filePath)
-  mzRfeatures <- as.tibble(as(featureData(myOrigData), "data.frame"))
-  mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
-                                        Q3 = productIsolationWindowTargetMZ)
+  # sampleNames(myOrigData) <- c(filePath)
+  # mzRfeatures <- as.tibble(as(featureData(myOrigData), "data.frame"))
+  # mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
+  #                                       Q3 = productIsolationWindowTargetMZ)
   # mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
   # featureNames(myOrigData) <- mzRfeatures$fName
   # myData <- calculateMeanValues(myOrigData)
