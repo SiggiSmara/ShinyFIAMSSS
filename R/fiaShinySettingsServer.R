@@ -39,8 +39,8 @@ fiaShinySettingsServer <- function(self) {
       updateCheckboxInput(session,'convertNewWiffs', value =as.logical(self$settings$convertWiffs))
       #updateCheckboxInput(session,'useParallel', value =as.logical(self$settings$useParallel))
       updateTextInput(session, 'fiaFile', value = as.character(self$settings$fiaFile))
-      #updateTextInput(session, 'multicores', value = as.character(self$settings$multicores))
-      #updateTextInput(session, 'fiaIstdFile', value = as.character(self$settings$fiaIstdFile))
+      updateTextInput(session, 'reload', value = as.logical(self$settings$reload))
+      updateTextInput(session, 'forceRecalc', value = as.logical(self$settings$forceRecalc))
       updateTextAreaInput(session, 'fiaFeatures', value = as.character(self$settings$fiaFeatures))
 
 
@@ -69,8 +69,8 @@ fiaShinySettingsServer <- function(self) {
         self$settings$workdirPath <- readDirectoryInput(session, 'mzmlDirectory')
         self$settings$wiffPath <- readDirectoryInput(session, 'wiffDirectory')
         self$settings$convertWiffs <- input$convertNewWiffs
-        #self$settings$useParallel <- input$useParallel
-        #self$settings$multicores <- input$multicores
+        self$settings$reload <- input$reload
+        self$settings$forceRecalc <- input$forceRecalc
         stopApp()  # stop shiny
       }
     })
@@ -165,8 +165,8 @@ fiaShinySettingsServer <- function(self) {
       self$settings$workdirPath <- readDirectoryInput(session, 'mzmlDirectory')
       self$settings$wiffPath <- readDirectoryInput(session, 'wiffDirectory')
       self$settings$convertWiffs <- input$convertNewWiffs
-      #self$settings$useParallel <- input$useParallel
-      #self$settings$multicores <- input$multicores
+      self$settings$reload <- input$reload
+      self$settings$forceRecalc <- input$forceRecalc
 
       save(settings, file=file.path(self$settings$workdirRDataPath,'settings.RData'))
       showNotification("Settings saved", type='message')

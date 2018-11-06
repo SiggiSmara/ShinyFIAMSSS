@@ -357,11 +357,11 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   if(file.exists(file.path(self$settings$workdirRDataPath, 'resdata.RData'))) {
     unlink(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
   }
-  if(file.exists(file.path(self$settings$workdirRDataPath, 'tst.RData'))) {
-    unlink(file.path(self$settings$workdirRDataPath, 'tst.RData'))
+  if(file.exists(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))) {
+    unlink(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
   }
   save(resdata, file=file.path(self$settings$workdirRDataPath, 'resdata.RData'))
-  save(tst, file=file.path(self$settings$workdirRDataPath, 'tst.RData'))
+  save(resdataNice, file=file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
 
 }
 
@@ -384,31 +384,33 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' @return no return value, assigns to self$resdata
 #' and self$resdataNice the loaded values
 #'
-loadFiaResults <- function(self, reload = FALSE, forceRecalc = FALSE) {
+loadFiaResults <- function(self) {
+  reload <- self$settings$reload,
+  forceRecalc <- self$settings$forceRecalc
   if(reload || forceRecalc) {
     reloadFiaResults(self, forceRecalc = forceRecalc)
     load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
-    load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
+    load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
   } else {
     loaded <- FALSE
     if(file.exists(file.path(self$settings$workdirRDataPath, 'resdata.RData'))) {
       load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
       loaded <- TRUE
     }
-    if(file.exists(file.path(self$settings$workdirRDataPath, 'tst.RData'))) {
-      load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
+    if(file.exists(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))) {
+      load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
       loaded <- TRUE & loaded
     }
 
     if(!loaded) {
       reloadFiaResults(self, forceRecalc = forceRecalc)
       load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
-      load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
+      load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
     }
   }
 
   self$resdata <- resdata
-  self$resdataNice <- tst
+  self$resdataNice <- resdataNice
 }
 
 

@@ -72,10 +72,9 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
                           workdirPath = workdirPath,
                           workdirRDataPath = file.path(workdirPath,'RData'),
                           workdirMZMLPath = file.path(workdirPath, 'MZML'),
-                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea'
-                        #,
-                          #useParallel = FALSE,
-                          #multicores = 2
+                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea',
+                          reload = FALSE,
+                          forceRecalc = FALSE
                     )
   invisible(self)
 }
@@ -116,7 +115,7 @@ getFIAApp <- function(self) {
 #' tries to load the data from the converted files and put them into data objects
 #' that can be used for data exploration
 #' @return invisible(self)
-prepForFIA <- function(self, forceRecalc = FALSE) {
+prepForFIA <- function(self) {
 
 
   ##check for new datasets and convert them if they are found (based on a setting)
@@ -132,6 +131,11 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
                    'or else stop the script.')
       readline(msg)
     }
+    if(dim(allWiffPaths %>% filter(converted == FALSE))[1]>1) {
+      #means there were files to convert, ensures the results are
+      #calculated and loaded
+      $self$settings$reload=TRUE
+    }
   }
 
   ##TODO read the parent foldernames along with the other data
@@ -142,7 +146,9 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
   ##global objects used to assign the transitions
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
   self$myBiocFeatures <- mutate(self$myBiocFeatures, fName = as.factor(fName))
-  loadFiaResults(self, forceRecalc=forceRecalc)
+  loadFiaResults(self,
+                 reload = self$settings$reload,
+                 forceRecalc = self$settings$forceRecalc)
 
   ##Create the rest of the needed data objects to facilitate browsing
   self$myUIdata <- list()
