@@ -385,9 +385,9 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' and self$resdataNice the loaded values
 #'
 loadFiaResults <- function(self) {
-  reload <- self$settings$reload
+  reloadData <- self$settings$reloadData
   forceRecalc <- self$settings$forceRecalc
-  if(reload || forceRecalc) {
+  if(reloadData || forceRecalc) {
     reloadFiaResults(self, forceRecalc = forceRecalc)
     load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
     load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
