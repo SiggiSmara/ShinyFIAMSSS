@@ -158,6 +158,7 @@ processOneFolder <- function(folderPath, resultName) {
   fls <- list.files(folderPath,'*.mzML', recursive=FALSE)
   if(length(fls)>0) {
     print("starting bplapply")
+    print(file.path(folderPath,fls))
     bplapply(file.path(folderPath,fls), processOneMZML)
     print("bplapply finished")
     resTibble <- NULL
