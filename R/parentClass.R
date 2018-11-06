@@ -35,8 +35,8 @@ fiaR6 <- R6Class("fiaR6",
     runShinySettings = function(){
       runApp(getSettingsApp(self))
       },
-    prepareForFIA = function(forceRecalc = FALSE) {
-      prepForFIA(self, forceRecalc = forceRecalc)
+    prepareForFIA = function() {
+      prepForFIA(self)
     },
     runShinyFIA = function(){
       runApp(getFIAApp(self))
@@ -146,9 +146,7 @@ prepForFIA <- function(self) {
   ##global objects used to assign the transitions
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
   self$myBiocFeatures <- mutate(self$myBiocFeatures, fName = as.factor(fName))
-  loadFiaResults(self,
-                 reload = self$settings$reload,
-                 forceRecalc = self$settings$forceRecalc)
+  loadFiaResults(self)
 
   ##Create the rest of the needed data objects to facilitate browsing
   self$myUIdata <- list()
