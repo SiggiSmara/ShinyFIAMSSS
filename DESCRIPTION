@@ -13,7 +13,9 @@ Depends:
     lubridate,
     XML,
     xcms,
-    MALDIquant
+    MALDIquant,
+    doParallel,
+    R6
 Description: A tool to assess system suitability of a FIA MS (MRM type) setup
 RoxygenNote: 6.1.0
 Imports: shinyjs,

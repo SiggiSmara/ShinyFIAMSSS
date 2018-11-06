@@ -7,9 +7,10 @@ library(xcms)
 library(MALDIquant)
 library(shinyDirectoryInput)
 library(R6)
+library(doParallel)
+
 #library(RColorBrewer)
 #library(pander)
-library(doParallel)
 #library(utils)
 
 
@@ -117,8 +118,8 @@ getFIAApp <- function(self) {
 prepForFIA <- function(self, forceRecalc = FALSE) {
   #set the parallell parameters
   if(self$settings$useParallel) {
-    registerDoParallel(self$settings$multicores)
-    register(DoparParam(), default = TRUE)
+    doParallel::registerDoParallel(self$settings$multicores)
+    doParallel::register(DoparParam(), default = TRUE)
   } else {
     register(SerialParam(), default = TRUE)
   }
