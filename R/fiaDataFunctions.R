@@ -328,7 +328,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   resdata$included[resdata$barcode =='1026743112' & resdata$well == '14'] = 0
   resdata$included[resdata$barcode =='1026743112' & resdata$well == '02'] = 0
 
-  tst <- resdata %>%
+  resdataNice <- resdata %>%
     filter(included == 1 ) %>%
     group_by(fName, sampleTypeName, polarity) %>%
     mutate(grpMedVal = median(fiaValue),
@@ -336,9 +336,9 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
            ) %>%
     ungroup()
 
-  tst <- unite(tst, 'type_pol', c('sampleTypeName', 'polarity'), remove = FALSE)
+  resdataNice <- unite(resdataNice, 'type_pol', c('sampleTypeName', 'polarity'), remove = FALSE)
 
-  tst <- tst %>%
+  resdataNice <- resdataNice %>%
     group_by(fName, barcode, batchNo) %>%
     mutate(batchDate = min(tStamp),
            barc_batch_bname = paste(batchName,
@@ -347,7 +347,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
                                    sep='_')) %>%
     ungroup()
 
-  tst <- tst %>%
+  resdataNice <- resdataNice %>%
     group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
     arrange(barcode, batchNo, tStamp)
 
