@@ -119,7 +119,7 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
   #set the parallell parameters
   if(self$settings$useParallel) {
     doParallel::registerDoParallel(self$settings$multicores)
-    doParallel::register(DoparParam(), default = TRUE)
+    register(DoparParam(), default = TRUE)
   } else {
     register(SerialParam(), default = TRUE)
   }
