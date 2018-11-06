@@ -72,8 +72,8 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
                           workdirPath = workdirPath,
                           workdirRDataPath = file.path(workdirPath,'RData'),
                           workdirMZMLPath = file.path(workdirPath, 'MZML'),
-                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea'#,
-  #                         reloadData = FALSE,
+                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea',
+                          reloadData = FALSE#,
   #                         forceRecalc = FALSE
                      )
   invisible(self)
