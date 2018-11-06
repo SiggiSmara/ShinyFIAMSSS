@@ -31,7 +31,7 @@ fiaShinySettingsUI <-function(self) {
                        label = 'Proteowizard directory'
         ),
         checkboxInput('convertNewWiffs', 'Look for and convert new raw data files', value = TRUE),
-        checkboxInput('reload', 'Reload results (Will only calculate new results if found)', value = FALSE),
+        checkboxInput('reloadData', 'Reload results (Will only calculate new results if found)', value = FALSE),
         checkboxInput('forceRecalc', 'Recalculate ALL results (Warning! This takes a long time)', value = FALSE),
         # conditionalPanel(
         #   condition = "input.useParallel == true",
