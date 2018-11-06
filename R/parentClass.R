@@ -17,53 +17,58 @@ register(DoparParam(), default = TRUE)
 
 
 #' @name fiaR6
-#' 
+#'
 #' @title the FIA R6 object
-#' 
-#' @export 
+#'
+#' @export
 fiaR6 <- R6Class("fiaR6",
   public = list(
     settings = NULL,
-    myBiocFeatures = NULL, 
+    myBiocFeatures = NULL,
     FIAistds = NULL,
     myUIdata = NULL,
     resdata = NULL,
     resdataNice = NULL,
     debug = list(),
-    initialize = function(workdirPath, wiffPath){
+    initialize = function(workdirPath, wiffPath = ''){
       initFiaR6(self, workdirPath, wiffPath)
       },
-    runShinySettings = function(){ 
+    runShinySettings = function(){
       runApp(getSettingsApp(self))
       },
     prepareForFIA = function(forceRecalc = FALSE) {
       prepForFIA(self, forceRecalc = forceRecalc)
     },
-    runShinyFIA = function(){ 
+    runShinyFIA = function(){
       runApp(getFIAApp(self))
     }
   )
 )
 
 #' @name initFiaR6
-#' 
+#'
 #' @title initialize the fiaR6 object
-#' 
+#'
 #' @param self passed from the pR6 object contains all public variables and functions
 #' @param workdirPath the working directory path, contains both mzml data files, the results
 #' and settings (if they are saved)
 #' @param wiffPath the path to the topmost directory containing raw data files (to be converted via
 #' proteowizard's msconvert)
-#' 
+#'
 #' @return invisible(self)
 initFiaR6 <- function(self, workdirPath, wiffPath) {
+  convertWiffsetting <- TRUE
   workdirPath <- normalizePath(workdirPath)
-  wiffPath <- normalizePath(wiffPath)
+  if(nchar(wiffPath)>0) {
+    wiffPath <- normalizePath(wiffPath)
+    convertWiffsetting <- FALSE
+  }
+
   FIAspikesClean <- c('C0','C2','C3','C4','C5','C6 (C4:1-DC)','C8','C10','C12','C14','C16','C18','lysoPC a C18:0',
                      'PC aa C24:0','SM C18:0','H1','PC aa C36:0')
-  self$settings <- list(fiaFile='features.csv', 
+  self$settings <- list(fiaFile='features.csv',
                           fiaFeatures = FIAspikesClean,
-                          convertWiffs = TRUE,
+                          convertWiffs = convertWiffsetting,
                           wiffPath = wiffPath,
                           workdirPath = workdirPath,
                           workdirRDataPath = file.path(workdirPath,'RData'),
@@ -75,19 +80,19 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
 
 
 #' @name getSettingsApp
-#' 
+#'
 #' @title get the shiny app for the settings
-#' 
+#'
 #' @param self passed from the pR6 object contains all public variables and functions
-#' 
+#'
 #' @return shinyApp for the settings
-#' 
+#'
 getSettingsApp <- function(self) {
     return(shinyApp(ui = fiaShinySettingsUI(self), server = fiaShinySettingsServer(self)))
 }
 
 #' @name getFIAApp
-#' 
+#'
 #' @title Get the FIA MS SS app
 #'
 #' @param self passed from the pR6 object contains all public variables and functions
@@ -99,21 +104,21 @@ getFIAApp <- function(self) {
 }
 
 #' @name prepForFIA
-#' 
+#'
 #' @title Prepare for FIA SS data exploration
-#' 
+#'
 #' @param self passed from the pR6 object contains all public variables and functions
-#' 
-#' @description 
+#'
+#' @description
 #' First this function looks for any new wiff files to add to the results. Then it
 #' tries to load the data from the converted files and put them into data objects
 #' that can be used for data exploration
 #' @return invisible(self)
 prepForFIA <- function(self, forceRecalc = FALSE) {
   ##check for new datasets and convert them if they are found (based on a setting)
-  allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath, 
-                                        resPath = self$settings$workdirMZMLPath, 
-                                        protwizPath = self$settings$protwizPath,  
+  allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,
+                                        resPath = self$settings$workdirMZMLPath,
+                                        protwizPath = self$settings$protwizPath,
                                         doConvert=self$settings$convertWiffs)
   if(length(allWiffPaths) == 0) {
     warning("Wiff directory is not reachable!")
@@ -122,18 +127,18 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
                  'or else stop the script.')
     readline(msg)
   }
-  
+
   ##TODO read the parent foldernames along with the other data
   ##map the foldernames to dates, format; begins with (ymd or dmy)
   ##if format does not fit make a mapping from name to date
   ##that can be saved and reused. Interface via shiny app.
-  
+
   ##global objects used to assign the transitions
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
-  self$myBiocFeatures <- self$myBiocFeatures %>% rename( fName = name) %>% 
+  self$myBiocFeatures <- self$myBiocFeatures %>% rename( fName = name) %>%
                           mutate(fName = as.factor(fName))
   loadFiaResults(self, forceRecalc=forceRecalc)
-  
+
   ##Create the rest of the needed data objects to facilitate browsing
   self$myUIdata <- list()
   self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()

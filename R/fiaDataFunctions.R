@@ -9,7 +9,6 @@
 #registerDoParallel(3)
 #register(DoparParam(), default = TRUE)
 
-
 # #biocrates features
 # myBiocFeatures <- read_tsv(file.path(MZML_PATH,globalSettings$fiaFile))
 #
@@ -56,11 +55,11 @@ getStartTimeStamp <- function(xmlFile) {
 #' @title Split a file name by '.' or '_' or '-'
 #'
 #' @param fileTibble a tibble that contains file names in a column called sName
-#' @param splitcols a character vector containing the column names of the split. Any 
-#' column whose name starts with 'XX' will be discarded before returning the tible 
-#' @param sortcols a character vector containing the columns to be used for sorting and 
+#' @param splitcols a character vector containing the column names of the split. Any
+#' column whose name starts with 'XX' will be discarded before returning the tible
+#' @param sortcols a character vector containing the columns to be used for sorting and
 #' comparison for duplicate runs (basically different batches but same file name)
-#' 
+#'
 #' @details
 #' Every filename and splits it by one of three characters ('.' or '_' or '-').
 #'
@@ -74,13 +73,13 @@ parseFilenames <- function(fileTibble, splitcols, sortcols) {
   #names(retVals) <- names(retcols)
   fileTibble <- fileTibble %>% mutate(fileName = basename(sName))
   fileTibble <- fileTibble %>% separate(fileName, into=splitcols, sep="[._-]", remove=FALSE)
-  
+
   fileTibble <- fileTibble %>% select(sortcols, everything())
   fileTibble <- parseDups(fileTibble, testCols=sortcols)
-  
+
   #convert the tStamp to a date and add more columns
   fileTibble <- fileTibble %>% mutate(tStamp = unlist(lapply(fileTibble$sName, getStartTimeStamp)))
-  
+
   #return the tibble
   selcols <- names(fileTibble)
   selcols <- selcols[str_sub(selcols,1,2)!='XX']
@@ -91,8 +90,8 @@ parseFilenames <- function(fileTibble, splitcols, sortcols) {
 #'
 #' @title parse out diplicates from a tibble
 #'
-#' @param fileTibble a tibble 
-#' @param testCols a string vector with column names to use 
+#' @param fileTibble a tibble
+#' @param testCols a string vector with column names to use
 #' for determining if there are more than one batch.
 #'
 #' @details
@@ -120,15 +119,15 @@ parseDups <- function(fileTibble, testCols) {
 }
 
 #' @name processOneMZML
-#' 
+#'
 #' @title Process one mzML file
-#' 
-#' @description 
-#' Read one mzML file, calculate mean values for each transition and write the 
+#'
+#' @description
+#' Read one mzML file, calculate mean values for each transition and write the
 #' result into a tsv table with the same name as the mzML file
-#' 
+#'
 #' @param filePaht  the path (including the filename) of the mzML file
-#' 
+#'
 #' @return Nothing
 processOneMZML <- function(filePath) {
   myOrigData <- readSRMData(filePath)
@@ -147,13 +146,13 @@ processOneMZML <- function(filePath) {
 }
 
 #' @name  processOneFolder
-#' 
+#'
 #' @title Process one mzML folder
-#' 
-#' @description 
+#'
+#' @description
 #' Use multi-core processing (if set-up) to read mzML files from one directory
 #' and write out the results for each file
-#' 
+#'
 #' @param folderPath the path to the mzML folder
 processOneFolder <- function(folderPath, resultName) {
   fls <- list.files(folderPath,'*.mzML', recursive=FALSE)
@@ -178,12 +177,12 @@ processOneFolder <- function(folderPath, resultName) {
 #' @name assignFeatureNames
 #'
 #' @title Assign feature names
-#' 
-#' @details 
+#'
+#' @details
 #' Given a list of 'Q1_Q3_polarity' names and a corresponding data frame that also
 #' contains a name for each combination match them up
 #'
-#' @param transitions a list of strings containing  transition 
+#' @param transitions a list of strings containing  transition
 #' information on the form 'Q1_Q3_polarity'
 #' @param transNames a tibble with qolumns 'Q1', 'Q3', 'polarity', and 'feature'
 #'
@@ -217,7 +216,7 @@ readFiadata <- function(self, fiaFolderPath, resultName) {
 
       #assign sample names
       # sampleNames(bothdata[[(onePol+1)]]) <- unlist(unite(parsedFls %>% filter(polarity == onePol), sep ="_"))
-      # 
+      #
       # #assign mzML features
       # mzRfeatures <- as.tibble(as(featureData(bothdata[[(onePol+1)]]), "data.frame"))
       # mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
@@ -246,7 +245,7 @@ readFiadata <- function(self, fiaFolderPath, resultName) {
       # featureNames(bothdata[[(onePol+1)]]) <- fnames
     }
   }
-  
+
   return(bothdata)
 }
 
@@ -463,7 +462,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   #read the mzML files and the cps data from biocrates
   resPath <- self$settings$workdirMZMLPath
   datafolders <- list.dirs(resPath)
-  datafolders <- datafolders[grep("[0-9]{5}",basename(datafolders))]
+  datafolders <- datafolders[grep("[0-9]{7}",basename(datafolders))]
   resdata <- NULL
   for(fpath in datafolders) {
     oneFolder <- readOneFolder(self, fpath, forceRecalc = forceRecalc)
@@ -471,12 +470,12 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
       resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
     }
   }
-  
+
   #asign feature names and test information
   resdata <- resdata %>% separate(fName, into=c('Q1','Q3','polarity'), sep='_') %>%
     mutate(Q1 = as.numeric(Q1), Q3 = as.numeric(Q3), polarity=as.integer(polarity)) %>%
     inner_join(self$myBiocFeatures)
-  
+
   #parse the sName into something more useful
   retcols <- vector("character", 16)
   for(h in 1:16) {
@@ -493,18 +492,18 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   fileNames <- as.tibble(unique(resdata$sName))
   names(fileNames) <- c("sName")
   fileNames <- parseFilenames(fileNames, retcols, sortcols)
-  
+
   fileNames <- fileNames %>% mutate(
     batchName = basename(dirname(dirname(sName)))
-  ) 
+  )
   resdata <- resdata %>% inner_join(fileNames)
-  
+
   #add more columns
   resdata <- mutate(resdata, included = 1,
                      tStamp = ymd_hms(tStamp),
                      sampleTypeName = ifelse(sampleType =='01','Blank','SS')
    )
-  
+
   #exclude some known suspects... TODO: move this to a separate
   #RData object to be saved in the workdir
   resdata$included[resdata$batchNo>1] = 0
@@ -525,7 +524,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
            fiaValueRLA = fiaValue/grpMedVal
            ) %>%
     ungroup()
-  
+
   tst <- unite(tst, 'type_pol', c('sampleTypeName', 'polarity'), remove = FALSE)
 
   tst <- tst %>%
@@ -540,10 +539,16 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
   tst <- tst %>%
     group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
     arrange(barcode, batchNo, tStamp)
+
   if(!dir.exists(self$settings$workdirRDataPath)) {
     dir.create(self$settings$workdirRDataPath, recursive = TRUE)
   }
-  
+  if(file.exist(file.path(self$settings$workdirRDataPath, 'resdata.RData'))) {
+    unlink(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
+  }
+  if(file.exists(file.path(self$settings$workdirRDataPath, 'tst.RData'))) {
+    unlink(file.path(self$settings$workdirRDataPath, 'tst.RData'))
+  }
   save(resdata, file=file.path(self$settings$workdirRDataPath, 'resdata.RData'))
   save(tst, file=file.path(self$settings$workdirRDataPath, 'tst.RData'))
 
@@ -555,7 +560,11 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' @title Load the FIA results
 #'
 #' @param self passed from the pR6 object contains all public variables and functions
-#' @param forceRecalc boolean. Passed to \code{\link{reloadFiaResults}}.
+#' @param reload Boolean. Should the data be refreshed from result files. Will cause
+#' \code{\link{reloadFiaResults}} to be called if TRUE. Will reload the result files
+#' generated from \code{\link{processOneFolder}}
+#' @param forceRecalc Boolean. Will cause \code{\link{reloadFiaResults}} to be
+#' called if TRUE. Will also force the recalculation of the results.
 #'
 #' @details
 #' Load the FIA resutls, passes the forceRecalc variable to the underlying
@@ -564,8 +573,8 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' @return no return value, assigns to global values globalResdata
 #' and globalResdataNice
 #'
-loadFiaResults <- function(self, forceRecalc = FALSE) {
-  if(forceRecalc) {
+loadFiaResults <- function(self, reload = FALSE, forceRecalc = FALSE) {
+  if(reload || forceRecalc) {
     reloadFiaResults(self, forceRecalc = forceRecalc)
     load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
     load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
@@ -579,14 +588,14 @@ loadFiaResults <- function(self, forceRecalc = FALSE) {
       load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
       loaded <- TRUE & loaded
     }
-    
+
     if(!loaded) {
       reloadFiaResults(self, forceRecalc = forceRecalc)
       load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
       load(file.path(self$settings$workdirRDataPath, 'tst.RData'))
     }
   }
-  
+
   self$resdata <- resdata
   self$resdataNice <- tst
   #assign('globalResdata', resdata, inherits = TRUE)
