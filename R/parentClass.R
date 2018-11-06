@@ -71,7 +71,9 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
                           workdirPath = workdirPath,
                           workdirRDataPath = file.path(workdirPath,'RData'),
                           workdirMZMLPath = file.path(workdirPath, 'MZML'),
-                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea'
+                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea',
+                          useParallel = FALSE,
+                          multicores = 2
                     )
   invisible(self)
 }
@@ -114,10 +116,13 @@ getFIAApp <- function(self) {
 #' @return invisible(self)
 prepForFIA <- function(self, forceRecalc = FALSE) {
   #set the parallell parameters
-  if(self$settings$)
-  registerDoParallel(2)
-  register(DoparParam(), default = TRUE)
-  register(SerialParam())
+  if(self$settings$useParallel) {
+    registerDoParallel(self$settings$multicores)
+    register(DoparParam(), default = TRUE)
+  } else {
+    register(SerialParam(), default = TRUE)
+  }
+
   ##check for new datasets and convert them if they are found (based on a setting)
   if(self$settings$convertWiffs) {
     allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,
