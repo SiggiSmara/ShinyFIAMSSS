@@ -385,7 +385,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE) {
 #' and self$resdataNice the loaded values
 #'
 loadFiaResults <- function(self) {
-  reload <- self$settings$reload,
+  reload <- self$settings$reload
   forceRecalc <- self$settings$forceRecalc
   if(reload || forceRecalc) {
     reloadFiaResults(self, forceRecalc = forceRecalc)
