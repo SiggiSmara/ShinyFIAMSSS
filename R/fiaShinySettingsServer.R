@@ -168,7 +168,7 @@ fiaShinySettingsServer <- function(self) {
       self$settings$useParallel <- input$useParallel
       self$settings$multicores <- input$multicores
 
-      save(settings, file=file.path(self$settings$workdirRDataPath,'settings.RData')
+      save(settings, file=file.path(self$settings$workdirRDataPath,'settings.RData'))
       showNotification("Settings saved", type='message')
     })
     })
