@@ -146,7 +146,7 @@ prepForFIA <- function(self, forceRecalc = FALSE) {
   self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
   self$myUIdata$allYears <- unique(year(self$myUIdata$allDates))
   self$myUIdata$allBatchNames <- unique(self$resdataNice$batchName)
-  self$myUIdata$ISTDs <- unlist(unique(self$resdataNice %>% filter(is_IS == 1) %>% select(fName)), use.names = FALSE)
+  self$myUIdata$ISTDs <- as.character(unlist(fiaSS$myBiocFeatures %>% filter(is_IS == 1) %>% select(fName), use.names = FALSE))
   return(invisible(self))
 }
 
