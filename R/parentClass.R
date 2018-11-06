@@ -1,13 +1,13 @@
-library(shiny)
-library(DT)
-library(tidyverse)
-library(lubridate)
-library(XML)
-library(xcms)
-library(MALDIquant)
-library(shinyDirectoryInput)
-library(R6)
-library(doParallel)
+# library(shiny)
+# library(DT)
+# library(tidyverse)
+# library(lubridate)
+# library(XML)
+# library(xcms)
+# library(MALDIquant)
+# library(shinyDirectoryInput)
+# library(R6)
+# library(doParallel)
 
 #library(RColorBrewer)
 #library(pander)
@@ -72,9 +72,10 @@ initFiaR6 <- function(self, workdirPath, wiffPath) {
                           workdirPath = workdirPath,
                           workdirRDataPath = file.path(workdirPath,'RData'),
                           workdirMZMLPath = file.path(workdirPath, 'MZML'),
-                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea',
-                          useParallel = FALSE,
-                          multicores = 2
+                          protwizPath = 'c:/Program Files/ProteoWizard/ProteoWizard 3.0.18271.75bc4c4ea'
+                        #,
+                          #useParallel = FALSE,
+                          #multicores = 2
                     )
   invisible(self)
 }
@@ -116,13 +117,7 @@ getFIAApp <- function(self) {
 #' that can be used for data exploration
 #' @return invisible(self)
 prepForFIA <- function(self, forceRecalc = FALSE) {
-  #set the parallell parameters
-  if(self$settings$useParallel) {
-    doParallel::registerDoParallel(self$settings$multicores)
-    register(DoparParam(), default = TRUE)
-  } else {
-    register(SerialParam(), default = TRUE)
-  }
+
 
   ##check for new datasets and convert them if they are found (based on a setting)
   if(self$settings$convertWiffs) {

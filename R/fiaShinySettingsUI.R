@@ -31,11 +31,11 @@ fiaShinySettingsUI <-function(self) {
                        label = 'Proteowizard directory'
         ),
         checkboxInput('convertNewWiffs', 'Look for and convert new raw data files', value = TRUE),
-        checkboxInput('useParallel', 'Use parallel processing where possible', value = TRUE),
-        conditionalPanel(
-          condition = "input.useParallel == true",
-          textInput('multicores','How many cores to use?',value='3')
-        ),
+        # checkboxInput('useParallel', 'Use parallel processing where possible', value = TRUE),
+        # conditionalPanel(
+        #   condition = "input.useParallel == true",
+        #   textInput('multicores','How many cores to use?',value='3')
+        # ),
         textInput('fiaFile', 'MRM transitions file name **'),
         tags$div(class="h5", checked=NA,
                  tags$p("** Note: should be present in the Results directory")

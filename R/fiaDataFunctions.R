@@ -157,10 +157,9 @@ processOneMZML <- function(filePath) {
 processOneFolder <- function(folderPath, resultName) {
   fls <- list.files(folderPath,'*.mzML', recursive=FALSE)
   if(length(fls)>0) {
-    print("starting bplapply")
-    print(file.path(folderPath,fls))
+    #print("starting bplapply")
     bplapply(file.path(folderPath,fls), processOneMZML)
-    print("bplapply finished")
+    #print("bplapply finished")
     resTibble <- NULL
     for(oneFile in fls) {
       myResName <- paste0(str_sub(oneFile,1, nchar(oneFile)-4),'tsv')
