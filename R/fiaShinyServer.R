@@ -159,6 +159,13 @@ return(function(input, output, session) {
   output$table <- DT::renderDT({
     DT::datatable(barcodeOverview())
   })
+
+  observeEvent(input$toggleState, {
+    mydata <- barcodeOverview()[input$table_rows_selected,]
+    myBarcodes <- unique(unlist(mydata %>% select(barcode), use.names = FALSE))
+    #myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
+    self$resdataNice$included[self$resdataNice$barcode %in% myBarcodes]=0
+  })
 })
 
 }
