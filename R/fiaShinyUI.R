@@ -49,8 +49,8 @@ fiaShinyUI <-function(self) {
                                               textOutput("filter2")
                                              ),
                                     tabPanel("Table",
-                                             DT::dataTableOutput("table"),
-                                             actionButton("toggleState", "Toggle State")
+                                             actionButton("toggleState", "Toggle State"),
+                                             DT::dataTableOutput("table")
                                              )
                         )
                       )

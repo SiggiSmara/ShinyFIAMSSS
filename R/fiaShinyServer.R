@@ -127,7 +127,7 @@ return(function(input, output, session) {
     return(firstPass)
   })
 
-  ranges <- reactiveValues(x = NULL, y = NULL)
+  ranges <- reactiveValues(x = NULL, y = NULL, inclChanged = FALSE)
 
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
@@ -144,7 +144,7 @@ return(function(input, output, session) {
   })
 
   output$timePlot <- renderPlot({
-    mydata <- tst2()
+    mydata <- tst2() %>% filter(included == 1)
     ggplot(mydata, aes( x =  barc_batch_bname, y=displayValue, color=type_pol)) +
          geom_boxplot(alpha=0.5) +
          theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5)) +
@@ -157,17 +157,22 @@ return(function(input, output, session) {
   })
 
   output$table <- DT::renderDT({
+    if(ranges$inclChanged) {
+      isolate(ranges$inclChanged <- FALSE)
+    }
     DT::datatable(barcodeOverview())
   })
 
   observeEvent(input$toggleState, {
     mydata <- barcodeOverview()[input$table_rows_selected,]
-    myBarcodes <- unique(unlist(mydata %>% select(barcode), use.names = FALSE))
+    myBarcodes <- unique(unlist(mydata$barcode, use.names = FALSE))
     myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
     origIncludes <- self$resdataNice$included[myIndices]
     self$resdataNice$included[myIndices] <- abs(origIncludes-1)
-
+    ranges$inclChanged <- TRUE
   })
+
+  includesChanged <- reactiveValues(yes)
 })
 
 }
