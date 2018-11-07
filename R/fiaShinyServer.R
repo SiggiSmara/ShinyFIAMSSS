@@ -97,6 +97,10 @@ return(function(input, output, session) {
     if(length(input$metaboliteID) == 0) {
       firstPass <- self$resdataNice %>% filter(fName %in% '')
     } else {
+
+      print(input$sampleTypes)
+      print(as.factor(input$sampleTypes ))
+
       req(input$metaboliteID)
       req(input$sampleTypes)
       #req(input$valueType)
