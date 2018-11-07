@@ -26,8 +26,7 @@ fiaShinyUI <-function(self) {
                         ),
                         checkboxGroupInput(inputId='sampleTypes',
                                            label = 'Sample types',
-                                           c('SS','Blank'),
-                                           selected = list("SS")
+                                           c('SS','Blank')
                         ),
                         selectInput(inputId='valueType',
                                            label = 'Display absolute or relative values',
