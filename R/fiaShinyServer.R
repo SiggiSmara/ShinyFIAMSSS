@@ -115,7 +115,8 @@ return(function(input, output, session) {
                  sampleTypeName) %>%
         summarise(medianAbsoluteValue = median(fiaValue),
                   medianRelativeValue = median(fiaValueRLA),
-                  included = mean(included))
+                  included = mean(included)
+                  )
     } else {
       req(input$metaboliteID)
       req(input$sampleTypes)
@@ -129,7 +130,8 @@ return(function(input, output, session) {
                          sampleTypeName) %>%
                 summarise(medianAbsoluteValue = median(fiaValue),
                           medianRelativeValue = median(fiaValueRLA),
-                          included = mean(included))
+                          included = mean(included)
+                          )
     }
     return(firstPass)
   })
