@@ -163,8 +163,10 @@ return(function(input, output, session) {
   observeEvent(input$toggleState, {
     mydata <- barcodeOverview()[input$table_rows_selected,]
     myBarcodes <- unique(unlist(mydata %>% select(barcode), use.names = FALSE))
-    #myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
-    self$resdataNice$included[self$resdataNice$barcode %in% myBarcodes]=0
+    myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
+    origIncludes <- self$resdataNice$included[myIndices]
+    self$resdataNice$included[myIndices] <- abs(origIncludes-1)
+
   })
 })
 
