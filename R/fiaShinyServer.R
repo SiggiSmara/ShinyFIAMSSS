@@ -114,7 +114,7 @@ return(function(input, output, session) {
                  barcode,
                  sampleTypeName) %>%
         summarise(medianAbsoluteValue = median(fiaValue),
-                  medianRelativeValue = median(fiaValueRLA)
+                  medianRelativeValue = median(fiaValueRLA),
                   included = mean(included))
     } else {
       req(input$metaboliteID)
@@ -128,7 +128,7 @@ return(function(input, output, session) {
                          barcode,
                          sampleTypeName) %>%
                 summarise(medianAbsoluteValue = median(fiaValue),
-                          medianRelativeValue = median(fiaValueRLA)
+                          medianRelativeValue = median(fiaValueRLA),
                           included = mean(included))
     }
     return(firstPass)
