@@ -99,7 +99,7 @@ return(function(input, output, session) {
     } else {
 
       print(input$sampleTypes)
-      print(as.factor(input$sampleTypes ))
+      print(input$metaboTypes)
 
       req(input$metaboliteID)
       req(input$sampleTypes)
