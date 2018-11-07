@@ -95,44 +95,34 @@ return(function(input, output, session) {
 
   tst2 <- reactive({
     if(length(input$metaboliteID) == 0) {
-      return(self$resdataNice %>% filter(fName %in% '') )
+      firstPass <- self$resdataNice %>% filter(fName %in% '')
     } else {
       req(input$metaboliteID)
       req(input$sampleTypes)
-      return(self$resdataNice %>% filter(fName %in% input$metaboliteID &
-                            sampleTypeName %in% input$sampleTypes )
-      )
+      #req(input$valueType)
+      firstPass <- self$resdataNice %>%
+                        filter(fName %in% input$metaboliteID &
+                               sampleTypeName %in% as.factor(input$sampleTypes ))
+
     }
+    if(input$valueType =='Absolute') {
+      firstPass <- mutate(firstPass, displayValue = fiaValue)
+    } else {
+      firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
+    }
+    return(firstPass)
   })
 
   barcodeOverview <- reactive({
-    if(length(input$metaboliteID) == 0) {
-      firstPass <- self$resdataNice %>%
-        filter(fName %in% '') %>%
-        group_by(batchName,
-                 batchDate,
-                 barcode,
-                 sampleTypeName) %>%
-        summarise(medianAbsoluteValue = median(fiaValue),
-                  medianRelativeValue = median(fiaValueRLA),
-                  included = mean(included)
-                  )
-    } else {
-      req(input$metaboliteID)
-      req(input$sampleTypes)
-
-      firstPass <- self$resdataNice %>%
-                filter(fName %in% input$metaboliteID &
-                       sampleTypeName %in% input$sampleTypes ) %>%
-                group_by(batchName,
-                         batchDate,
-                         barcode,
-                         sampleTypeName) %>%
-                summarise(medianAbsoluteValue = median(fiaValue),
-                          medianRelativeValue = median(fiaValueRLA),
-                          included = mean(included)
-                          )
-    }
+    firstPass <- tst2() %>%
+      group_by(batchName,
+               batchDate,
+               barcode,
+               sampleTypeName) %>%
+      summarise(medianAbsoluteValue = median(fiaValue),
+                medianRelativeValue = median(fiaValueRLA),
+                included = mean(included)
+      )
     return(firstPass)
   })
 
@@ -154,7 +144,7 @@ return(function(input, output, session) {
 
   output$timePlot <- renderPlot({
     mydata <- tst2()
-    ggplot(mydata, aes( x =  barc_batch_bname, y=fiaValue, color=type_pol)) +
+    ggplot(mydata, aes( x =  barc_batch_bname, y=displayValue, color=type_pol)) +
          geom_boxplot(alpha=0.5) +
          theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5)) +
          #scale_y_continuous(trans='log10') +
