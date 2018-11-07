@@ -172,7 +172,6 @@ return(function(input, output, session) {
     ranges$inclChanged <- TRUE
   })
 
-  includesChanged <- reactiveValues(yes)
 })
 
 }
