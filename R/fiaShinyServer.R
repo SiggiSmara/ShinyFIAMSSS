@@ -119,12 +119,13 @@ return(function(input, output, session) {
 
   barcodeOverview <- reactive({
     firstPass <- tst2() %>%
+      mutate(sampleType = sampleTypeName) %>%
       group_by(batchName,
                batchDate,
                barcode,
-               sampleTypeName) %>%
-      summarise(medianAbsoluteValue = median(fiaValue),
-                medianRelativeValue = median(fiaValueRLA),
+               sampleType) %>%
+      summarise(medAbsValue = round(median(fiaValue)),
+                medRelValue = round(median(fiaValueRLA),2),
                 included = mean(included)
       )
     return(firstPass)
