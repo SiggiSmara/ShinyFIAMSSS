@@ -250,7 +250,6 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
   return(oneResdata)
 }
 
-
 #' @name reloadFiaResults
 #'
 #' @title reload the fia results from the working directory
@@ -268,30 +267,28 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
 #' @return nothing
 reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
   #read the mzML files and the cps data from biocrates
-  if(is.function(updateProgress)) {
-    updateProgress = fakeProgress
-  }
   resPath <- self$settings$workdirMZMLPath
   datafolders <- list.dirs(resPath)
   datafolders <- datafolders[grep("[0-9]{7}",basename(datafolders))]
   resdata <- NULL
-
-  updateProgress(value=0, detail = paste('Reloading data with forceRecalc =', forceRecalc))
-
+  if (is.function(updateProgress)) {
+    updateProgress(value=0, value = paste('Reloading data with forceRecalc =', forceRecalc))
+  }
   for(i in 1:length(datafolders)) {
     fpath <- datafolders[i]
     oneFolder <- readOneFolder(self, fpath, forceRecalc = forceRecalc)
     if(dim(oneFolder)[1] >0) {
       resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
     }
-
-    updateProgress(value=i/lenght(datafolders), detail = paste('Reloading data with forceRecalc =', forceRecalc))
+    if (is.function(updateProgress)) {
+      updateProgress(value=i/lenght(datafolders), value = paste('Reloading data with forceRecalc =', forceRecalc))
+    }
   }
 
   #asign feature names and test information
-
-  updateProgress(value=0, detail = 'Reloading data - reformatting')
-
+  if (is.function(updateProgress)) {
+    updateProgress(value=0, value = paste('Reloading data with forceRecalc =', forceRecalc)
+  }
   resdata <- resdata %>% separate(fName, into=c('Q1','Q3','polarity'), sep='_') %>%
     mutate(Q1 = as.numeric(Q1), Q3 = as.numeric(Q3), polarity=as.integer(polarity)) %>%
     inner_join(self$myBiocFeatures)
@@ -309,8 +306,6 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
   retcols[[9]] <- "sampleType"
   retcols[[15]] <- "sampleName"
   sortcols <- c("barcode","well","runNo","extra1","extra2","sampleType", "sampleName", "sName")
-
-  updateProgress(value=1/5, detail = 'Reloading data - reformatting')
   fileNames <- as.tibble(unique(resdata$sName))
   names(fileNames) <- c("sName")
   fileNames <- parseFilenames(fileNames, retcols, sortcols)
@@ -325,7 +320,6 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
   resdata <- resdata %>% inner_join(fileNames)
 
   #add more columns
-  updateProgress(value=2/5, detail = 'Reloading data - reformatting')
   resdata <- mutate(resdata, included = 1,
                      tStamp = ymd_hms(tStamp),
                      sampleTypeName = as.factor(ifelse(sampleType =='01','Blank','SS'))
@@ -352,8 +346,6 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
            ) %>%
     ungroup()
 
-  updateProgress(value=3/5, detail = 'Reloading data - reformatting')
-
   resdataNice <- unite(resdataNice, 'type_pol', c('sampleTypeName', 'polarity'), remove = FALSE)
 
   resdataNice <- resdataNice %>%
@@ -365,12 +357,9 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
                                    sep='_')) %>%
     ungroup()
 
-  updateProgress(value=4/5, detail = 'Reloading data - reformatting')
-
   resdataNice <- resdataNice %>%
     group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
     arrange(barcode, batchNo, tStamp)
-  updateProgress(value=5/5, detail = 'Reloading data - reformatting')
 
   if(!dir.exists(self$settings$workdirRDataPath)) {
     dir.create(self$settings$workdirRDataPath, recursive = TRUE)
@@ -432,11 +421,11 @@ loadFiaResults <- function(self, updateProgress = NULL) {
 
   self$resdata <- resdata
   if (is.function(updateProgress)) {
-    updateProgress(value=0.5, detail ='Loading preprocessed data...')
+    updateProgress(value=0.5, value ='Loading preprocessed data...')
   }
   self$resdataNice <- resdataNice
   if (is.function(updateProgress)) {
-    updateProgress(value=1, detail ='Loading preprocessed data...')
+    updateProgress(value=1, value ='Loading preprocessed data...')
   }
 }
 
