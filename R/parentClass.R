@@ -175,7 +175,7 @@ prepForFIA <- function(self, updateProgress = NULL) {
   #self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
 
   self$myUIdata$allBatchNames <- self$resdataNice %>% arrange(desc(batchDate)) %>% select(batchName)
-  self$myUIdata$allBatchNames <- unique(self$myUIdata$allBatchNames$batchName)
+  self$myUIdata$allBatchNames <- unique(as.character(self$myUIdata$allBatchNames$batchName))
 
   self$myUIdata$allBatches <- unique(self$resdataNice %>%
                                        group_by(batchName, barcode, batchDate) %>%
