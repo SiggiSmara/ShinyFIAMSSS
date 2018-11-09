@@ -146,6 +146,7 @@ processOneMZML <- function(filePath) {
   write_tsv(myData, myResultFile)
 }
 
+
 #' @name  processOneFolder
 #'
 #' @title Process one mzML folder
@@ -239,7 +240,7 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
   oneResdata <- tibble()
   resFilePath <- file.path(onePath, resultName)
   if(!file.exists(resFilePath) || forceRecalc ) {
-    print(paste("recalculating...", onePath))
+    #print(paste("recalculating...", onePath))
     if(file.exists(resFilePath)) {
       unlink(resFilePath)
     }
