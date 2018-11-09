@@ -116,7 +116,7 @@ getFIAApp <- function(self) {
 #' The real progress function comes from shiny and is used to give the user
 #' and indicator of the progress of a long process
 fakeProgress <- function(value = NULL, detail = NULL) {
-
+  print(paste(value, detail))
 }
 
 #' @name prepForFIA
@@ -166,7 +166,7 @@ prepForFIA <- function(self, updateProgress = NULL) {
   updateProgress(value=2/4, detail = 'Loading results')
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
   self$myBiocFeatures <- mutate(self$myBiocFeatures, fName = as.factor(fName))
-  loadFiaResults(self)
+  loadFiaResults(self, updateProgress)
 
   ##Create the rest of the needed data objects to facilitate browsing
   updateProgress(value=3/4, detail = 'Preparing the final data')

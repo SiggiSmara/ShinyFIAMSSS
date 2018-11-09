@@ -16,7 +16,7 @@ return(function(input, output, session) {
   startupFilter <- reactive({
     updateSelectInput(session, 'metaboliteID', choices = myAnalytes())
     #updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
-    updateSelectInput(session, 'batchName', choices = c('select a parent folder', self$myUIdata$allBatchNames))
+    updateSelectInput(session, 'batchName', choices = self$myUIdata$allBatchNames)
     updateSelectInput(session, 'batchID', choices = myBatches())
     return('')
   })
@@ -50,13 +50,34 @@ return(function(input, output, session) {
   #   }
   # })
 
+  observeEvent(input$batchName, {
+    updateSelectInput(session, 'batchID', choices = myBatches())
+  })
+
 
   myBatches <- reactive({
     allBatches <- self$myUIdata$allBatches
-    if(input$batchName !='select a parent folder') {
+    if(input$batchName !='##########') {
       allBatches <- allBatches %>% filter(as.character(batchName) == input$batchName)
     }
     return(unique(allBatches$barcode))
+  })
+
+  myBatchData <- reactive({
+    req(input$sampleTypes)
+    req(input$batchID)
+    if(input$batchID !='##########') {
+      firstPass <- filter(self$resdataNice, barcode == input$batchID) %>%
+        filter(sampleTypeName %in% as.factor(input$sampleTypes ))
+      if(input$valueType =='Absolute') {
+        firstPass <- mutate(firstPass, displayValue = fiaValue)
+      } else {
+        firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
+      }
+      return(firstPass %>% filter(barcode == input$batchID))
+    } else {
+      return(firstPass <- self$resdataNice %>% filter(fName %in% ''))
+    }
   })
 
   observeEvent(input$metaboTypes, {
@@ -94,15 +115,11 @@ return(function(input, output, session) {
       req(input$sampleTypes)
       #req(input$valueType)
       firstPass <- self$resdataNice %>%
-                        filter(fName %in% input$metaboliteID &
+                        filter(as.character(fName) %in% input$metaboliteID &
                                sampleTypeName %in% as.factor(input$sampleTypes ))
 
     }
-    if(input$valueType =='Absolute') {
-      firstPass <- mutate(firstPass, displayValue = fiaValue)
-    } else {
-      firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
-    }
+
     return(firstPass)
   })
 
@@ -134,6 +151,23 @@ return(function(input, output, session) {
       ranges$x <- NULL
       ranges$y <- NULL
     }
+  })
+
+  output$indivPlot <- renderPlot({
+    mydata <- myBatchData()
+    if(input$valueType =='Absolute') {
+      mydata <- mutate(mydata, displayValue = fiaValue)
+    } else {
+      mydata <- mutate(mydata, displayValue = fiaValueRLA)
+    }
+    ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName)) +
+      geom_point(alpha=0.5) +
+      ggtitle(paste0("SS batch: ",
+                     paste(unique(mydata$barcode), sep=','),
+                      " metabolite: ",
+                     paste(unique(mydata$fName), sep=',' ))) +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      facet_wrap(. ~ type_pol, nrow=2)
   })
 
   output$timePlot <- renderPlot({
