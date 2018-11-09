@@ -21,13 +21,13 @@ fiaShinyUI <-function(self) {
                                            c('Analytes','ISTDs'),
                                            selected = 'Analytes'
                         ),
-                        selectInput('metaboliteID', 'Choose your analyte',
-                                    c('Analyte')
-                        ),
                         checkboxGroupInput(inputId='sampleTypes',
                                            label = 'Sample types',
                                            c('SS','Blank'),
                                            selected = 'SS'
+                        ),
+                        selectInput('metaboliteID', 'Choose your analyte',
+                                    c('Analyte')
                         ),
                         selectInput(inputId='valueType',
                                            label = 'Display absolute or relative values',
@@ -59,24 +59,33 @@ fiaShinyUI <-function(self) {
            tabPanel("Individual SS",
                     sidebarLayout(
                       sidebarPanel(
-                        #actionButton("recalcAll", "Recalc All"),
-                        selectInput('filterYear', 'Filter on year',
-                                    c(2015)
-                        ),
-                        selectInput('filterMonth', 'Filter on month',
-                                    c(-1:-12)
-                        ),
-                        selectInput('filterDay', 'Filter on day',
-                                    c(-1:-30)
-                        ),
-                        selectInput('batchID', 'Choose a batch',
-                                    c('##########')
+                        checkboxGroupInput(inputId='metaboTypes2',
+                                           label = 'Metabolyte types',
+                                           c('Analytes','ISTDs'),
+                                           selected = 'Analytes'
                         ),
                         checkboxGroupInput(inputId='sampleTypes2',
                                            label = 'Sample types',
                                            c('SS','Blank'),
                                            selected = 'SS'
-                        )
+                        ),
+                        #actionButton("recalcAll", "Recalc All"),
+                        # selectInput('filterYear', 'Filter on year',
+                        #             c(2015)
+                        # ),
+                        # selectInput('filterMonth', 'Filter on month',
+                        #             c(-1:-12)
+                        # ),
+                        # selectInput('filterDay', 'Filter on day',
+                        #             c(-1:-30)
+                        # ),
+                        selectInput('batchName', 'Choose a parent folder',
+                                    c('##########')
+                        ),
+                        selectInput('batchID', 'Choose a batch',
+                                    c('##########')
+                        ),
+
                       ),
 
                       # Show a plot of the generated distribution

@@ -15,8 +15,9 @@ return(function(input, output, session) {
 
   startupFilter <- reactive({
     updateSelectInput(session, 'metaboliteID', choices = myAnalytes())
-    updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
-    updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
+    #updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
+    updateSelectInput(session, 'batchName', choices = c('select a parent folder', self$myUIdata$allBatchNames))
+    updateSelectInput(session, 'batchID', choices = myBatches())
     return('')
   })
 
@@ -24,44 +25,36 @@ return(function(input, output, session) {
     startupFilter()
   })
 
-  observeEvent(input$filterYear, {
-    if(length(self$myUIdata$allDates) > 0){
-      mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
-      mymonths <-unique(month(mymonths, label = TRUE, abbr = TRUE))
-      updateSelectInput(session, 'filterMonth', choices = c('select a month', as.character(mymonths)))
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
-  })
+  # observeEvent(input$filterYear, {
+  #   if(length(self$myUIdata$allDates) > 0){
+  #     mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
+  #     mymonths <-unique(month(mymonths, label = TRUE, abbr = TRUE))
+  #     updateSelectInput(session, 'filterMonth', choices = c('select a month', as.character(mymonths)))
+  #     updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
+  #   }
+  # })
 
-  observeEvent(input$filterMonth, {
-    if(length(self$myUIdata$allDates) > 0) {
-      mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
-      mydays <- mymonths[month(mymonths, label = TRUE, abbr = TRUE) == input$filterMonth]
-      mydays <-unique(day(mydays))
-      updateSelectInput(session, 'filterDay', choices = c('select a day',mydays))
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
-  })
+  # observeEvent(input$filterMonth, {
+  #   if(length(self$myUIdata$allDates) > 0) {
+  #     mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
+  #     mydays <- mymonths[month(mymonths, label = TRUE, abbr = TRUE) == input$filterMonth]
+  #     mydays <-unique(day(mydays))
+  #     updateSelectInput(session, 'filterDay', choices = c('select a day',mydays))
+  #     updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
+  #   }
+  # })
 
-  observeEvent(input$filterDay, {
-    if(length(self$myUIdata$allDates) > 0) {
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
-  })
+  # observeEvent(input$filterDay, {
+  #   if(length(self$myUIdata$allDates) > 0) {
+  #     updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
+  #   }
+  # })
+
 
   myBatches <- reactive({
-    allBatches <- self$resdataNice %>% group_by(barcode, batchDate) %>% summarise()
-    if(input$filterYear !='select a year') {
-      #print("filter year")
-      allBatches <- allBatches %>% filter(year(batchDate) == input$filterYear)
-      if(input$filterMonth != 'select a month') {
-        #print("filter month")
-        allBatches <- allBatches %>% filter(month(batchDate, label = TRUE, abbr = TRUE) == input$filterMonth)
-        if(input$filterDay != 'select a day') {
-          #print("filter day")
-          allBatches <- allBatches %>% filter(day(batchDate) == input$filterDay)
-        }
-      }
+    allBatches <- self$myUIdata$allBatches
+    if(input$batchName !='select a parent folder') {
+      allBatches <- allBatches %>% filter(batchName == input$batchName)
     }
     return(unique(allBatches$barcode))
   })

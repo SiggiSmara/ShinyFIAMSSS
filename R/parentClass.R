@@ -171,10 +171,17 @@ prepForFIA <- function(self, updateProgress = NULL) {
   ##Create the rest of the needed data objects to facilitate browsing
   updateProgress(value=3/4, detail = 'Preparing the final data')
   self$myUIdata <- list()
-  self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()
-  self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
-  self$myUIdata$allYears <- unique(year(self$myUIdata$allDates))
-  self$myUIdata$allBatchNames <- unique(self$resdataNice$batchName)
+  #self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()
+  #self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
+
+  self$myUIdata$allBatchNames <- self$resdataNice %>% arrange(desc(batchDate)) %>% select(batchName)
+  self$myUIdata$allBatchNames <- unique(self$myUIdata$allBatchNames$batchName)
+
+  self$myUIdata$allBatches <- unique(self$resdataNice %>%
+                                       group_by(batchName, barcode, batchDate) %>%
+
+                                       summarise()
+                                     )
   self$myUIdata$ISTDs <- as.character(unlist(fiaSS$myBiocFeatures %>% filter(is_IS == 1) %>% select(fName), use.names = FALSE))
   updateProgress(value=4/4, detail = 'Done')
   return(invisible(self))
