@@ -205,6 +205,13 @@ return(function(input, output, session) {
     myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
     origIncludes <- self$resdataNice$included[myIndices]
     self$resdataNice$included[myIndices] <- abs(origIncludes-1)
+    self$resdataNice <- self$resdataNice %>%
+      filter(included == 1 ) %>%
+      group_by(fName, sampleTypeName, polarity) %>%
+      mutate(grpMedVal = median(fiaValue),
+             fiaValueRLA = fiaValue/grpMedVal
+      ) %>%
+      ungroup()
     #ranges$inclChanged <- TRUE
   })
 
