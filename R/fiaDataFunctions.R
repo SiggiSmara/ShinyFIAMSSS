@@ -156,11 +156,13 @@ processOneMZML <- function(filePath) {
 #' and write out the results for each file
 #'
 #' @param folderPath the path to the mzML folder
-processOneFolder <- function(folderPath, resultName) {
+processOneFolder <- function(folderPath, resultName, forceRecalc = FALSE) {
   fls <- list.files(folderPath,'*.mzML', recursive=FALSE)
   if(length(fls)>0) {
     #print("starting bplapply")
-    bplapply(file.path(folderPath,fls), processOneMZML)
+    if(forceRecalc) {
+      bplapply(file.path(folderPath,fls), processOneMZML)
+    }
     #print("bplapply finished")
     resTibble <- NULL
     for(oneFile in fls) {
@@ -169,6 +171,9 @@ processOneFolder <- function(folderPath, resultName) {
       resTibble <- bind_rows(resTibble, read_tsv(myResName, col_types = cols()))
     }
     resFilePath <- file.path(folderPath, resultName)
+    if(file.exists(resFilePath)) {
+      unlink(resFilePath)
+    }
     write.table(resTibble, resFilePath, row.names = FALSE, sep = '\t')
   } else{
     print("no mzML files found")
@@ -244,7 +249,7 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
     if(file.exists(resFilePath)) {
       unlink(resFilePath)
     }
-    processOneFolder(onePath, resultName)
+    processOneFolder(onePath, resultName, forceRecalc)
   }
   if(file.exists(resFilePath)) {
     oneResdata <- read_tsv(resFilePath, col_types = cols())

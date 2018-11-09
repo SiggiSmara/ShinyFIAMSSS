@@ -116,7 +116,7 @@ getFIAApp <- function(self) {
 #' The real progress function comes from shiny and is used to give the user
 #' and indicator of the progress of a long process
 fakeProgress <- function(value = NULL, detail = NULL) {
-  print(paste(round(value,2), detail))
+  print(paste(round(value,3), detail))
 }
 
 #' @name prepForFIA

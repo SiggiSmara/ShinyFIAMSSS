@@ -172,6 +172,11 @@ return(function(input, output, session) {
 
   output$timePlot <- renderPlot({
     mydata <- tst2() %>% filter(included == 1)
+    if(input$valueType =='Absolute') {
+      mydata <- mutate(mydata, displayValue = fiaValue)
+    } else {
+      mydata <- mutate(mydata, displayValue = fiaValueRLA)
+    }
     ggplot(mydata, aes( x =  barc_batch_bname, y=displayValue, color=type_pol)) +
          geom_boxplot(alpha=0.5) +
          theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5)) +
