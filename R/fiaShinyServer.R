@@ -54,7 +54,7 @@ return(function(input, output, session) {
   myBatches <- reactive({
     allBatches <- self$myUIdata$allBatches
     if(input$batchName !='select a parent folder') {
-      allBatches <- allBatches %>% filter(batchName == input$batchName)
+      allBatches <- allBatches %>% filter(as.character(batchName) == input$batchName)
     }
     return(unique(allBatches$barcode))
   })
