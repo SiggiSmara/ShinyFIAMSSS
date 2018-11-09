@@ -138,12 +138,11 @@ processOneMZML <- function(filePath) {
   mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
   featureNames(myOrigData) <- mzRfeatures$fName
   myData <- calculateMeanValues(myOrigData)
-  myData$tStamp <- getStartTimeStamp(filePath)
+  myData$tStamp <- rep(getStartTimeStamp(filePath), dim(myData)[1])
   myResultFile <- paste0(str_sub(filePath, 1, nchar(filePath)-4),'tsv')
   if(file.exists(myResultFile)) {
     unlink(myResultFile)
   }
-
   write_tsv(myData, myResultFile)
 }
 
