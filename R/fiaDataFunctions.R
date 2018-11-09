@@ -285,7 +285,8 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
       resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
     }
 
-    updateProgress(value=i/lenght(datafolders), detail = paste('Reloading data with forceRecalc =', forceRecalc))
+    updateProgress(value=i/lenght(datafolders),
+                   detail = paste('Reloading data with forceRecalc =', forceRecalc))
   }
 
   #asign feature names and test information
