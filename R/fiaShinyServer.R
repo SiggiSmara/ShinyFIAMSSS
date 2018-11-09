@@ -66,9 +66,12 @@ return(function(input, output, session) {
   myBatchData <- reactive({
     req(input$sampleTypes)
     req(input$batchID)
+    req(input$batchName)
     if(input$batchID !='##########') {
       firstPass <- filter(self$resdataNice, barcode == input$batchID) %>%
-        filter(sampleTypeName %in% as.factor(input$sampleTypes ))
+        filter(batchName == input$batchName) %>%
+        filter(sampleTypeName %in% as.factor(input$sampleTypes )) %>%
+        filter(fName %in% myAnalytes())
       if(input$valueType =='Absolute') {
         firstPass <- mutate(firstPass, displayValue = fiaValue)
       } else {
@@ -160,8 +163,9 @@ return(function(input, output, session) {
     } else {
       mydata <- mutate(mydata, displayValue = fiaValueRLA)
     }
-    ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName)) +
+    ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
       geom_point(alpha=0.5) +
+      geom_line()+
       ggtitle(paste0("SS batch: ",
                      paste(unique(mydata$barcode), sep=','),
                       " metabolite: ",
