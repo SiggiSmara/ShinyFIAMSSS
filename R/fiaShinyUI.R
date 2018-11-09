@@ -84,7 +84,7 @@ fiaShinyUI <-function(self) {
                         ),
                         selectInput('batchID', 'Choose a batch',
                                     c('##########')
-                        ),
+                        )
 
                       ),
 
