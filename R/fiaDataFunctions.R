@@ -282,10 +282,7 @@ reloadFiaResults <- function(self, updateProgress, forceRecalc = FALSE) {
 
   for(i in 1:length(datafolders)) {
     fpath <- datafolders[i]
-    oneFolder <- readOneFolder(self, fpath, forceRecalc = forceRecalc)
-    if(dim(oneFolder)[1] >0) {
-      resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
-    }
+    resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
 
     updateProgress(value=i/length(datafolders),
                    detail = paste('Reloading data with forceRecalc =', forceRecalc))
