@@ -10,7 +10,7 @@
 #library(shinyjs)
 fiaShinyUI <-function(self) {
   shinyUI(
-    navbarPage("FIA SS Explorer",
+    navbarPage("FIA SS Explorer", id="inTabset"
           tabPanel("Settings",
                    sidebarLayout(
                      sidebarPanel(
