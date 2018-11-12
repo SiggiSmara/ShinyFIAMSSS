@@ -165,6 +165,9 @@ return(function(input, output, session) {
         progress$set(value = value, detail = detail)
       }
       self$prepareForFIA(updateProgress)
+
+      updateTabsetPanel(session, "inTabset",
+                        selected = "Time Trends")
       #switch to next panel?
       #stopApp()  # stop shiny
     }
