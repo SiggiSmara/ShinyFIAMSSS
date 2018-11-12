@@ -275,9 +275,6 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
 #' @return nothing
 reloadFiaResults <- function(self, updateProgress, forceRecalc = FALSE) {
   #read the mzML files and the cps data from biocrates
-  if(is.function(updateProgress)) {
-    updateProgress = fakeProgress
-  }
   resPath <- self$settings$workdirMZMLPath
   datafolders <- list.dirs(resPath)
   datafolders <- datafolders[grep("[0-9]{7}",basename(datafolders))]
@@ -416,7 +413,7 @@ loadFiaResults <- function(self, updateProgress) {
   reloadData <- self$settings$reloadData
   forceRecalc <- self$settings$forceRecalc
   if(reloadData || forceRecalc) {
-    reloadFiaResults(self, forceRecalc = forceRecalc, updateProgress = updateProgress)
+    reloadFiaResults(self, updateProgress, forceRecalc = forceRecalc)
     load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
     load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
   } else {
@@ -431,7 +428,7 @@ loadFiaResults <- function(self, updateProgress) {
     }
 
     if(!loaded) {
-      reloadFiaResults(self, forceRecalc = forceRecalc, updateProgress = updateProgress)
+      reloadFiaResults(self, updateProgress, forceRecalc = forceRecalc)
       load(file.path(self$settings$workdirRDataPath, 'resdata.RData'))
       load(file.path(self$settings$workdirRDataPath, 'resdataNice.RData'))
     }
