@@ -248,6 +248,9 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
     #print(paste("recalculating...", onePath))
     if(file.exists(resFilePath)) {
       unlink(resFilePath)
+    } else {
+      #make sure that we calculate results if they are missing
+      forceRecalc = TRUE
     }
     processOneFolder(onePath, resultName, forceRecalc)
   }

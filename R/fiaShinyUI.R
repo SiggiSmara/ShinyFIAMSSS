@@ -94,6 +94,7 @@ fiaShinyUI <-function(self) {
                                              ),
                                     tabPanel("Table",
                                              actionButton("toggleState", "Toggle State"),
+                                             hr(),
                                              DT::dataTableOutput("table")
                                              ),
                                     tabPanel("Individual",
