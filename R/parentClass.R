@@ -153,7 +153,7 @@ prepForFIA <- function(self, updateProgress = NULL) {
     if(dim(allWiffPaths %>% filter(converted == FALSE))[1]>1) {
       #means there were files to convert, ensures the results are
       #calculated and loaded
-      self$settings$reload <- TRUE
+      self$settings$reloadData <- TRUE
     }
   }
 

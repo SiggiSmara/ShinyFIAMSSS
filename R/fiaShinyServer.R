@@ -288,7 +288,7 @@ return(function(input, output, session) {
     } else {
       mydata <- mutate(mydata, displayValue = fiaValueRLA)
     }
-    if(length(unique(mydata$type_pol))>0){
+    if(dim(mydata)[1]>0){
       ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
         geom_point(alpha=0.5) +
         geom_line()+
