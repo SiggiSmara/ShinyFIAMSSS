@@ -36,7 +36,7 @@ fiaR6 <- R6Class("fiaR6",
       runApp(getSettingsApp(self))
       },
     prepareForFIA = function(updateProgress = NULL) {
-      prepForFIA(self, updateProgress = NULL)
+      prepForFIA(self, updateProgress)
     },
     runShinyFIA = function(){
       runApp(getFIAApp(self))
