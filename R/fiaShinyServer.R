@@ -202,7 +202,7 @@ return(function(input, output, session) {
       } else {
         firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
       }
-      return(firstPass %>% filter(barcode == input$batchID))
+      return(firstPass)
     } else {
       return(firstPass <- self$resdataNice %>% filter(fName %in% ''))
     }
@@ -288,15 +288,17 @@ return(function(input, output, session) {
     } else {
       mydata <- mutate(mydata, displayValue = fiaValueRLA)
     }
-    ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
-      geom_point(alpha=0.5) +
-      geom_line()+
-      ggtitle(paste0("SS batch: ",
-                     paste(unique(mydata$barcode), sep=','),
-                      " metabolite: ",
-                     paste(unique(mydata$fName), sep=',' ))) +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      facet_wrap(. ~ type_pol, nrow=2)
+    if(length(unique(mydata$type_pol))>0){
+      ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
+        geom_point(alpha=0.5) +
+        geom_line()+
+        ggtitle(paste0("SS batch: ",
+                       paste(unique(mydata$barcode), sep=','),
+                        " metabolite: ",
+                       paste(unique(mydata$fName), sep=',' ))) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        facet_wrap(. ~ type_pol, nrow=2)
+    }
   })
 
   output$timePlot <- renderPlot({
@@ -318,10 +320,10 @@ return(function(input, output, session) {
   })
 
   output$table <- DT::renderDT({
+    DT::datatable(barcodeOverview())
     if(ranges$inclChanged) {
       isolate(ranges$inclChanged <- FALSE)
     }
-    DT::datatable(barcodeOverview())
   })
 
   observeEvent(input$toggleState, {
@@ -337,7 +339,7 @@ return(function(input, output, session) {
              fiaValueRLA = fiaValue/grpMedVal
       ) %>%
       ungroup()
-    #ranges$inclChanged <- TRUE
+    ranges$inclChanged <- TRUE
   })
 
 })
