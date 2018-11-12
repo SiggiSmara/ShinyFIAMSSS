@@ -7,8 +7,8 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(shinyjs)
+#library(shiny)
+#library(shinyjs)
 # Define UI for application that draws a histogram
 fiaShinySettingsUI <-function(self) {
   shinyUI(fluidPage(

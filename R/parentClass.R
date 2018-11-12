@@ -116,7 +116,7 @@ getFIAApp <- function(self) {
 #' The real progress function comes from shiny and is used to give the user
 #' and indicator of the progress of a long process
 fakeProgress <- function(value = NULL, detail = NULL) {
-
+  print(paste(round(value,3), detail))
 }
 
 #' @name prepForFIA
@@ -138,7 +138,7 @@ prepForFIA <- function(self, updateProgress = NULL) {
   updateProgress(value=0, detail = 'prepForFia started')
   ##check for new datasets and convert them if they are found (based on a setting)
   if(self$settings$convertWiffs) {
-    updateProgress(value=1/4, detail = paste('Looking for new wiffs')
+    updateProgress(value=1/4, detail = paste('Looking for new wiffs'))
     allWiffPaths <- findPotentialWiffDirs(self$settings$wiffPath,
                                           resPath = self$settings$workdirMZMLPath,
                                           protwizPath = self$settings$protwizPath,
@@ -163,20 +163,27 @@ prepForFIA <- function(self, updateProgress = NULL) {
   ##that can be saved and reused. Interface via shiny app.
 
   ##global objects used to assign the transitions
-  updateProgress(value=2/4, detail = paste('Loading results')
+  updateProgress(value=2/4, detail = 'Loading results')
   self$myBiocFeatures <- read_csv(file.path(self$settings$workdirPath, self$settings$fiaFile), col_types = cols())
   self$myBiocFeatures <- mutate(self$myBiocFeatures, fName = as.factor(fName))
-  loadFiaResults(self)
+  loadFiaResults(self, updateProgress)
 
   ##Create the rest of the needed data objects to facilitate browsing
-  updateProgress(value=3/4, detail = paste('Preparing the final data')
+  updateProgress(value=3/4, detail = 'Preparing the final data')
   self$myUIdata <- list()
-  self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()
-  self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
-  self$myUIdata$allYears <- unique(year(self$myUIdata$allDates))
-  self$myUIdata$allBatchNames <- unique(self$resdataNice$batchName)
+  #self$myUIdata$allDates <- self$resdataNice %>% group_by(batchDate) %>% summarise()
+  #self$myUIdata$allDates <-self$myUIdata$allDates$batchDate
+
+  self$myUIdata$allBatchNames <- self$resdataNice %>% arrange(desc(batchDate)) %>% select(batchName)
+  self$myUIdata$allBatchNames <- unique(as.character(self$myUIdata$allBatchNames$batchName))
+
+  self$myUIdata$allBatches <- unique(self$resdataNice %>%
+                                       group_by(batchName, barcode, batchDate) %>%
+
+                                       summarise()
+                                     )
   self$myUIdata$ISTDs <- as.character(unlist(fiaSS$myBiocFeatures %>% filter(is_IS == 1) %>% select(fName), use.names = FALSE))
-  updateProgress(value=4/4, detail = paste('Done')
+  updateProgress(value=4/4, detail = 'Done')
   return(invisible(self))
 }
 

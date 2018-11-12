@@ -47,8 +47,9 @@ return(function(input, output, session) {
 
   startupFilter2 <- reactive({
     updateSelectInput(session, 'metaboliteID', choices = myAnalytes())
-    updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
-    updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
+    #updateSelectInput(session, 'filterYear', choices = c('select a year',allYears()))
+    updateSelectInput(session, 'batchName', choices = self$myUIdata$allBatchNames)
+    updateSelectInput(session, 'batchID', choices = myBatches())
     return('')
   })
 
@@ -168,46 +169,40 @@ return(function(input, output, session) {
       #stopApp()  # stop shiny
     }
   })
-  observeEvent(input$filterYear, {
-    if(length(self$myUIdata$allDates) > 0){
-      mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
-      mymonths <-unique(month(mymonths, label = TRUE, abbr = TRUE))
-      updateSelectInput(session, 'filterMonth', choices = c('select a month', as.character(mymonths)))
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
+
+
+
+  observeEvent(input$batchName, {
+    updateSelectInput(session, 'batchID', choices = myBatches())
   })
 
-  observeEvent(input$filterMonth, {
-    if(length(self$myUIdata$allDates) > 0) {
-      mymonths <- self$myUIdata$allDates[year(self$myUIdata$allDates) == input$filterYear]
-      mydays <- mymonths[month(mymonths, label = TRUE, abbr = TRUE) == input$filterMonth]
-      mydays <-unique(day(mydays))
-      updateSelectInput(session, 'filterDay', choices = c('select a day',mydays))
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
-  })
-
-  observeEvent(input$filterDay, {
-    if(length(self$myUIdata$allDates) > 0) {
-      updateSelectInput(session, 'batchID', choices = myBatches(), selected = input$batchID)
-    }
-  })
 
   myBatches <- reactive({
-    allBatches <- self$resdataNice %>% group_by(barcode, batchDate) %>% summarise()
-    if(input$filterYear !='select a year') {
-      #print("filter year")
-      allBatches <- allBatches %>% filter(year(batchDate) == input$filterYear)
-      if(input$filterMonth != 'select a month') {
-        #print("filter month")
-        allBatches <- allBatches %>% filter(month(batchDate, label = TRUE, abbr = TRUE) == input$filterMonth)
-        if(input$filterDay != 'select a day') {
-          #print("filter day")
-          allBatches <- allBatches %>% filter(day(batchDate) == input$filterDay)
-        }
-      }
+    allBatches <- self$myUIdata$allBatches
+    if(input$batchName !='##########') {
+      allBatches <- allBatches %>% filter(as.character(batchName) == input$batchName)
     }
     return(unique(allBatches$barcode))
+  })
+
+  myBatchData <- reactive({
+    req(input$sampleTypes)
+    req(input$batchID)
+    req(input$batchName)
+    if(input$batchID !='##########') {
+      firstPass <- filter(self$resdataNice, barcode == input$batchID) %>%
+        filter(batchName == input$batchName) %>%
+        filter(sampleTypeName %in% as.factor(input$sampleTypes )) %>%
+        filter(fName %in% myAnalytes())
+      if(input$valueType =='Absolute') {
+        firstPass <- mutate(firstPass, displayValue = fiaValue)
+      } else {
+        firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
+      }
+      return(firstPass %>% filter(barcode == input$batchID))
+    } else {
+      return(firstPass <- self$resdataNice %>% filter(fName %in% ''))
+    }
   })
 
   observeEvent(input$metaboTypes, {
@@ -245,15 +240,11 @@ return(function(input, output, session) {
       req(input$sampleTypes)
       #req(input$valueType)
       firstPass <- self$resdataNice %>%
-                        filter(fName %in% input$metaboliteID &
+                        filter(as.character(fName) %in% input$metaboliteID &
                                sampleTypeName %in% as.factor(input$sampleTypes ))
 
     }
-    if(input$valueType =='Absolute') {
-      firstPass <- mutate(firstPass, displayValue = fiaValue)
-    } else {
-      firstPass <- mutate(firstPass, displayValue = fiaValueRLA)
-    }
+
     return(firstPass)
   })
 
@@ -287,8 +278,31 @@ return(function(input, output, session) {
     }
   })
 
+  output$indivPlot <- renderPlot({
+    mydata <- myBatchData()
+    if(input$valueType =='Absolute') {
+      mydata <- mutate(mydata, displayValue = fiaValue)
+    } else {
+      mydata <- mutate(mydata, displayValue = fiaValueRLA)
+    }
+    ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
+      geom_point(alpha=0.5) +
+      geom_line()+
+      ggtitle(paste0("SS batch: ",
+                     paste(unique(mydata$barcode), sep=','),
+                      " metabolite: ",
+                     paste(unique(mydata$fName), sep=',' ))) +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      facet_wrap(. ~ type_pol, nrow=2)
+  })
+
   output$timePlot <- renderPlot({
     mydata <- tst2() %>% filter(included == 1)
+    if(input$valueType =='Absolute') {
+      mydata <- mutate(mydata, displayValue = fiaValue)
+    } else {
+      mydata <- mutate(mydata, displayValue = fiaValueRLA)
+    }
     ggplot(mydata, aes( x =  barc_batch_bname, y=displayValue, color=type_pol)) +
          geom_boxplot(alpha=0.5) +
          theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=0.5)) +
@@ -313,6 +327,13 @@ return(function(input, output, session) {
     myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
     origIncludes <- self$resdataNice$included[myIndices]
     self$resdataNice$included[myIndices] <- abs(origIncludes-1)
+    self$resdataNice <- self$resdataNice %>%
+      filter(included == 1 ) %>%
+      group_by(fName, sampleTypeName, polarity) %>%
+      mutate(grpMedVal = median(fiaValue),
+             fiaValueRLA = fiaValue/grpMedVal
+      ) %>%
+      ungroup()
     #ranges$inclChanged <- TRUE
   })
 

@@ -7,15 +7,18 @@ Version: 0.1.0
 Depends:
     shiny,
     shinyDirectoryInput,
-    DT,
     tidyverse,
     lubridate,
     XML,
     xcms,
-    MALDIquant,
     doParallel,
+    shinyjs,
+    DT,
+    MALDIquant,
     R6
 Description: A tool to assess system suitability of a FIA MS (MRM type) setup
 RoxygenNote: 6.1.0
-Imports: shinyjs,
-    doParallel
+Imports: 
+  shinyjs,
+  DT,
+  MALDIquant

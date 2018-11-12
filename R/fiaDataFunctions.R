@@ -78,7 +78,7 @@ parseFilenames <- function(fileTibble, splitcols, sortcols) {
   fileTibble <- parseDups(fileTibble, testCols=sortcols)
 
   #convert the tStamp to a date and add more columns
-  fileTibble <- fileTibble %>% mutate(tStamp = unlist(lapply(fileTibble$sName, getStartTimeStamp)))
+  #fileTibble <- fileTibble %>% mutate(tStamp = unlist(lapply(fileTibble$sName, getStartTimeStamp)))
 
   #return the tibble
   selcols <- names(fileTibble)
@@ -131,19 +131,21 @@ parseDups <- function(fileTibble, testCols) {
 #' @return Nothing
 processOneMZML <- function(filePath) {
   myOrigData <- readSRMData(filePath)
-  # sampleNames(myOrigData) <- c(filePath)
-  # mzRfeatures <- as.tibble(as(featureData(myOrigData), "data.frame"))
-  # mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
-  #                                       Q3 = productIsolationWindowTargetMZ)
-  # mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
-  # featureNames(myOrigData) <- mzRfeatures$fName
-  # myData <- calculateMeanValues(myOrigData)
-  # myResultFile <- paste0(str_sub(filePath, 1, nchar(filePath)-4),'tsv')
-  # if(file.exists(myResultFile)) {
-  #   unlink(myResultFile)
-  # }
-  # write_tsv(myData, myResultFile)
+  sampleNames(myOrigData) <- c(filePath)
+  mzRfeatures <- as.tibble(as(featureData(myOrigData), "data.frame"))
+  mzRfeatures <- mzRfeatures %>% mutate(Q1 = precursorIsolationWindowTargetMZ,
+                                        Q3 = productIsolationWindowTargetMZ)
+  mzRfeatures <- mzRfeatures %>% unite(fName, Q1, Q3, polarity)
+  featureNames(myOrigData) <- mzRfeatures$fName
+  myData <- calculateMeanValues(myOrigData)
+  myData$tStamp <- rep(getStartTimeStamp(filePath), dim(myData)[1])
+  myResultFile <- paste0(str_sub(filePath, 1, nchar(filePath)-4),'tsv')
+  if(file.exists(myResultFile)) {
+    unlink(myResultFile)
+  }
+  write_tsv(myData, myResultFile)
 }
+
 
 #' @name  processOneFolder
 #'
@@ -154,11 +156,13 @@ processOneMZML <- function(filePath) {
 #' and write out the results for each file
 #'
 #' @param folderPath the path to the mzML folder
-processOneFolder <- function(folderPath, resultName) {
+processOneFolder <- function(folderPath, resultName, forceRecalc = FALSE) {
   fls <- list.files(folderPath,'*.mzML', recursive=FALSE)
   if(length(fls)>0) {
     #print("starting bplapply")
-    bplapply(file.path(folderPath,fls), processOneMZML)
+    if(forceRecalc) {
+      bplapply(file.path(folderPath,fls), processOneMZML)
+    }
     #print("bplapply finished")
     resTibble <- NULL
     for(oneFile in fls) {
@@ -167,6 +171,9 @@ processOneFolder <- function(folderPath, resultName) {
       resTibble <- bind_rows(resTibble, read_tsv(myResName, col_types = cols()))
     }
     resFilePath <- file.path(folderPath, resultName)
+    if(file.exists(resFilePath)) {
+      unlink(resFilePath)
+    }
     write.table(resTibble, resFilePath, row.names = FALSE, sep = '\t')
   } else{
     print("no mzML files found")
@@ -238,11 +245,11 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
   oneResdata <- tibble()
   resFilePath <- file.path(onePath, resultName)
   if(!file.exists(resFilePath) || forceRecalc ) {
-    print(paste("recalculating...", onePath))
+    #print(paste("recalculating...", onePath))
     if(file.exists(resFilePath)) {
       unlink(resFilePath)
     }
-    processOneFolder(onePath, resultName)
+    processOneFolder(onePath, resultName, forceRecalc)
   }
   if(file.exists(resFilePath)) {
     oneResdata <- read_tsv(resFilePath, col_types = cols())
@@ -266,7 +273,7 @@ readOneFolder <- function(self, onePath, resultName = 'result.tsv', forceRecalc 
 #' for all transitions.
 #'
 #' @return nothing
-reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
+reloadFiaResults <- function(self, updateProgress, forceRecalc = FALSE) {
   #read the mzML files and the cps data from biocrates
   if(is.function(updateProgress)) {
     updateProgress = fakeProgress
@@ -280,12 +287,10 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
 
   for(i in 1:length(datafolders)) {
     fpath <- datafolders[i]
-    oneFolder <- readOneFolder(self, fpath, forceRecalc = forceRecalc)
-    if(dim(oneFolder)[1] >0) {
-      resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
-    }
+    resdata  <- bind_rows(resdata,readOneFolder(self, fpath, forceRecalc = forceRecalc))
 
-    updateProgress(value=i/lenght(datafolders), detail = paste('Reloading data with forceRecalc =', forceRecalc))
+    updateProgress(value=i/length(datafolders),
+                   detail = paste('Reloading data with forceRecalc =', forceRecalc))
   }
 
   #asign feature names and test information
@@ -326,9 +331,11 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
 
   #add more columns
   updateProgress(value=2/5, detail = 'Reloading data - reformatting')
-  resdata <- mutate(resdata, included = 1,
-                     tStamp = ymd_hms(tStamp),
-                     sampleTypeName = as.factor(ifelse(sampleType =='01','Blank','SS'))
+  resdata <- mutate(resdata,
+                    fName = as.factor(fName),
+                    included = 1,
+                    tStamp = ymd_hms(tStamp),
+                    sampleTypeName = as.factor(ifelse(sampleType =='01','Blank','SS'))
    )
 
   #exclude some known suspects... TODO: move this to a separate
@@ -368,8 +375,8 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
   updateProgress(value=4/5, detail = 'Reloading data - reformatting')
 
   resdataNice <- resdataNice %>%
-    group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
-    arrange(barcode, batchNo, tStamp)
+    #group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
+    arrange(tStamp)
   updateProgress(value=5/5, detail = 'Reloading data - reformatting')
 
   if(!dir.exists(self$settings$workdirRDataPath)) {
@@ -405,7 +412,7 @@ reloadFiaResults <- function(self, forceRecalc = FALSE, updateProgress = NULL) {
 #' @return no return value, assigns to self$resdata
 #' and self$resdataNice the loaded values
 #'
-loadFiaResults <- function(self, updateProgress = NULL) {
+loadFiaResults <- function(self, updateProgress) {
   reloadData <- self$settings$reloadData
   forceRecalc <- self$settings$forceRecalc
   if(reloadData || forceRecalc) {
@@ -431,13 +438,10 @@ loadFiaResults <- function(self, updateProgress = NULL) {
   }
 
   self$resdata <- resdata
-  if (is.function(updateProgress)) {
-    updateProgress(value=0.5, detail ='Loading preprocessed data...')
-  }
+  updateProgress(value=0.5, detail ='Loading preprocessed data...')
+
   self$resdataNice <- resdataNice
-  if (is.function(updateProgress)) {
-    updateProgress(value=1, detail ='Loading preprocessed data...')
-  }
+  updateProgress(value=1, detail ='Loading preprocessed data...')
 }
 
 
