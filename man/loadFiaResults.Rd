@@ -4,16 +4,21 @@
 \alias{loadFiaResults}
 \title{Load the FIA results}
 \usage{
-loadFiaResults(self, forceRecalc = FALSE)
+loadFiaResults(self, updateProgress)
 }
 \arguments{
 \item{self}{passed from the pR6 object contains all public variables and functions}
 
-\item{forceRecalc}{boolean. Passed to \code{\link{reloadFiaResults}}.}
+\item{reload}{Boolean. Should the data be refreshed from result files. Will cause
+\code{\link{reloadFiaResults}} to be called if TRUE. Will reload the result files
+generated from \code{\link{processOneFolder}}}
+
+\item{forceRecalc}{Boolean. Will cause \code{\link{reloadFiaResults}} to be
+called if TRUE. Will also force the recalculation of the results.}
 }
 \value{
-no return value, assigns to global values globalResdata
-and globalResdataNice
+no return value, assigns to self$resdata
+and self$resdataNice the loaded values
 }
 \description{
 Load the FIA results

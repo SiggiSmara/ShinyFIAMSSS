@@ -94,12 +94,16 @@ convertOneWiffFolder <- function(myTibbleRow, resPath, protwizPath) {
   unlink(destPath, recursive = TRUE)
   dir.create(destPath, recursive = TRUE)
   if(.Platform$OS.type == 'windows'){
-    command <- sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert")))
-    args <- paste(sprintf('"%s"',file.path(wiffPath,paste0('KIT*_',myTibbleRow['barcode'],'*.wiff'))),
+    command <- 'cmd.exe'
+    args <- paste(shQuote(normalizePath(file.path(protwizPath,'msconvert.exe')),'cmd'),
+                  shQuote(file.path(normalizePath(wiffPath),paste0('KIT*_',myTibbleRow['barcode'],'*.wiff')),'cmd'),
                   '-z',
                   '-o',
-                  sprintf('"%s"',destPath)
+                  shQuote(destPath,'cmd')
     )
+    suppressWarnings({
+      system2(command, input = args, wait = TRUE)
+    })
   } else {
     command <- 'wine'
     args <- paste(sprintf('"%s"',normalizePath(paste0(protwizPath,"/msconvert"))),
@@ -108,8 +112,9 @@ convertOneWiffFolder <- function(myTibbleRow, resPath, protwizPath) {
                   '-o',
                   sprintf('"%s"',destPath)
     )
+    suppressWarnings({
+      system2(command, args)
+    })
   }
-  suppressWarnings({
-    system2(command, args)
-  })
+
 }

@@ -4,7 +4,7 @@
 \alias{reloadFiaResults}
 \title{reload the fia results from the working directory}
 \usage{
-reloadFiaResults(resPath, forceRecalc = FALSE)
+reloadFiaResults(self, updateProgress, forceRecalc = FALSE)
 }
 \arguments{
 \item{forceRecalc}{boolean. If TRUE then mzML files are read

@@ -4,7 +4,7 @@
 \alias{prepForFIA}
 \title{Prepare for FIA SS data exploration}
 \usage{
-prepForFIA(self)
+prepForFIA(self, updateProgress = NULL)
 }
 \arguments{
 \item{self}{passed from the pR6 object contains all public variables and functions}

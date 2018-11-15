@@ -4,6 +4,7 @@ Author: Sigurdur Smarason
 Maintainer: Sigurdur Smarason  <runningman69@gmail.com>
 License: BSD 3-Clause License
 Version: 0.1.0
+Encoding: UTF-8
 Depends:
     shiny,
     shinyDirectoryInput,
@@ -17,7 +18,7 @@ Depends:
     MALDIquant,
     R6
 Description: A tool to assess system suitability of a FIA MS (MRM type) setup
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Imports: 
   shinyjs,
   DT,

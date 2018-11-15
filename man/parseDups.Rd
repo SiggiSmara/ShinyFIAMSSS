@@ -4,12 +4,13 @@
 \alias{parseDups}
 \title{parse out diplicates from a tibble}
 \usage{
-parseDups(fileTibble)
+parseDups(fileTibble, testCols)
 }
 \arguments{
-\item{fileTibble}{a tibble with columns of "barcode",
-"well", "runNo", "extra1", "extra2", "sampleType", "sampleName"
-coming from the parseFile function}
+\item{fileTibble}{a tibble}
+
+\item{testCols}{a string vector with column names to use
+for determining if there are more than one batch.}
 }
 \value{
 A tibble with a new colum batchNo indicating the batch number

@@ -4,7 +4,8 @@
 \alias{readOneFolder}
 \title{Read results from a folder containing data files from one experiment}
 \usage{
-readOneFolder(onePath, resultName = "result.tsv", forceRecalc = FALSE)
+readOneFolder(self, onePath, resultName = "result.tsv",
+  forceRecalc = FALSE)
 }
 \arguments{
 \item{onePath}{a path to a batch of SS files generated}
@@ -16,7 +17,8 @@ If FALSE then the already generated results are looked for first and returned
 if found.}
 }
 \value{
-a tibble of results for all experiments found in the folder
+a tibble of results for all experiments found in the folder or
+an emtpy tibble if no results should be returned
 }
 \description{
 Read results from a folder containing data files from one experiment
