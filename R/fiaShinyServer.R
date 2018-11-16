@@ -244,7 +244,7 @@ return(function(input, output, session) {
       #req(input$valueType)
       firstPass <- self$resdataNice %>%
                         filter(as.character(fName) %in% input$metaboliteID &
-                               sampleTypeName %in% as.factor(input$sampleTypes ))
+                               as.character(sampleTypeName) %in% input$sampleTypes )
 
     }
 
@@ -265,7 +265,7 @@ return(function(input, output, session) {
     return(firstPass)
   })
 
-  ranges <- reactiveValues(x = NULL, y = NULL, inclChanged = FALSE)
+  ranges <- reactiveValues(x = NULL, y = NULL)
 
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
@@ -321,9 +321,6 @@ return(function(input, output, session) {
 
   output$table <- DT::renderDT({
     DT::datatable(barcodeOverview())
-    if(ranges$inclChanged) {
-      isolate(ranges$inclChanged <- FALSE)
-    }
   })
 
   observeEvent(input$toggleState, {
@@ -332,14 +329,14 @@ return(function(input, output, session) {
     myIndices <- which(self$resdataNice$barcode %in% myBarcodes)
     origIncludes <- self$resdataNice$included[myIndices]
     self$resdataNice$included[myIndices] <- abs(origIncludes-1)
-    self$resdataNice <- self$resdataNice %>%
-      filter(included == 1 ) %>%
+
+    medVals <- filter(self$resdataNice, included == 1 ) %>%
       group_by(fName, sampleTypeName, polarity) %>%
-      mutate(grpMedVal = median(fiaValue),
-             fiaValueRLA = fiaValue/grpMedVal
-      ) %>%
-      ungroup()
-    ranges$inclChanged <- TRUE
+      summarize(grpMedVal = median(fiaValue))
+
+    self$resdataNice <- mutate(self$resdataNice, grpMedVal = NULL) %>%
+      inner_join(medVals, by=c('fName', 'sampleTypeName', 'polarity')) %>%
+      mutate(fiaValueRLA = fiaValue/grpMedVal)
   })
 
 })

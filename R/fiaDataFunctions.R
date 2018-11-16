@@ -176,7 +176,7 @@ processOneFolder <- function(folderPath, resultName, forceRecalc = FALSE) {
     }
     write.table(resTibble, resFilePath, row.names = FALSE, sep = '\t')
   } else{
-    print("no mzML files found")
+    print(paste0("No mzML files found in ",folderPath))
   }
 }
 
@@ -375,7 +375,6 @@ reloadFiaResults <- function(self, updateProgress, forceRecalc = FALSE) {
   updateProgress(value=4/5, detail = 'Reloading data - reformatting')
 
   resdataNice <- resdataNice %>%
-    #group_by(fName, sampleTypeName, type_pol, barc_batch_bname) %>%
     arrange(tStamp)
   updateProgress(value=5/5, detail = 'Reloading data - reformatting')
 
