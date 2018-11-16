@@ -375,7 +375,11 @@ reloadFiaResults <- function(self, updateProgress, forceRecalc = FALSE) {
   updateProgress(value=4/5, detail = 'Reloading data - reformatting')
 
   resdataNice <- resdataNice %>%
-    arrange(tStamp)
+    arrange(batchDate)
+
+  barc_batch_bname_levels = unique(resdataNice$barc_batch_bname)
+  resdataNice <- mutate(resdataNice, barc_batch_bname = factor(resdataNice$barc_batch_bname, levels=barc_batch_bname_levels))
+
   updateProgress(value=5/5, detail = 'Reloading data - reformatting')
 
   if(!dir.exists(self$settings$workdirRDataPath)) {

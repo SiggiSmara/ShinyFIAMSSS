@@ -266,7 +266,7 @@ return(function(input, output, session) {
   })
 
   ranges <- reactiveValues(x = NULL, y = NULL)
-
+  ranges2 <- reactiveValues(x = NULL, y = NULL)
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
   observeEvent(input$timePlot_dblclick, {
@@ -281,6 +281,18 @@ return(function(input, output, session) {
     }
   })
 
+  observeEvent(input$indivPlott_dblclick, {
+    brush <- input$indivPlot_brush
+    if (!is.null(brush)) {
+      ranges2$x <- c(brush$xmin, brush$xmax)
+      ranges2$y <- c(brush$ymin, brush$ymax)
+
+    } else {
+      ranges2$x <- NULL
+      ranges2$y <- NULL
+    }
+  })
+
   output$indivPlot <- renderPlot({
     mydata <- myBatchData()
     if(input$valueType =='Absolute') {
@@ -290,6 +302,8 @@ return(function(input, output, session) {
     }
     if(dim(mydata)[1]>0){
       ggplot(mydata, aes( x = tStamp, y=displayValue, color=fName, group=fName)) +
+        geom_point(data = mydata %>% filter(as.character(fName) == input$metaboliteID),
+                   shape = 21, color = "black", size = 4)+
         geom_point(alpha=0.5) +
         geom_line()+
         ggtitle(paste0("SS batch: ",
@@ -297,7 +311,9 @@ return(function(input, output, session) {
                         " metabolite: ",
                        paste(unique(mydata$fName), sep=',' ))) +
         theme(plot.title = element_text(hjust = 0.5)) +
-        facet_wrap(. ~ type_pol, nrow=2)
+        coord_cartesian( ylim = ranges2$y, expand = FALSE)
+      #+
+      #  facet_wrap(. ~ type_pol, nrow=2)
     }
   })
 
